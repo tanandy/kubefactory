@@ -1,0 +1,14 @@
+ansible==2.9.16
+ansible-lint
+docker
+furo
+ipaddr
+jinja2
+mitogen
+molecule
+molecule[docker]
+openshift
+passlib
+pip
+Sphinx
+wheel
