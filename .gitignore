@@ -35,3 +35,4 @@ terraform.tfstate.d
 _w_*.yml
 docs/build
 *.code-workspace
+.env.galaxy
