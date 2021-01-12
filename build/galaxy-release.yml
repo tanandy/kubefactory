@@ -1,0 +1,58 @@
+#!/usr/bin/env ansible-playbook
+---
+- hosts: localhost
+  connection: local
+  become: no
+  gather_facts: false
+
+  vars:
+    project_dir: "{{ (playbook_dir + '/../') | realpath }}"
+    dot_ansible_dir: "{{ lookup('env', 'HOME') }}/.ansible"
+    galaxy_token_file: "{{ dot_ansible_dir }}/galaxy_token"
+    galaxy_token: "{{ lookup('env','ANSIBLE_GALAXY_TOKEN') }}"
+    tag: "{{ gitref.split('/')[-1] }}"
+    galaxy_namespace: wescale
+    galaxy_name: kubefactory
+    galaxy_archive_name: "{{ galaxy_namespace }}-{{ galaxy_name }}-{{ tag }}.tar.gz"
+    galaxy_archive_file: "{{ project_dir }}/{{ galaxy_archive_name }}"
+
+  pre_tasks:
+    - name: Ensure the ANSIBLE_GALAXY_TOKEN environment variable is set.
+      assert:
+        that: 
+          - (galaxy_token | length) > 0
+        msg: Env variable 'ANSIBLE_GALAXY_TOKEN' is not set.
+
+    - name: Ensure $HOME/.ansible directory exists
+      file:
+        path: "{{ dot_ansible_dir }}"
+        state: directory
+
+    - name: Write the galaxy token to $HOME/.ansible/galaxy_token
+      copy:
+        content: |
+          token: {{ lookup('env','ANSIBLE_GALAXY_TOKEN') }}
+        dest: "{{ galaxy_token_file }}"
+
+  tasks:
+    - name: Render galaxy.yml
+      template:
+        src: templates/galaxy.yml.j2
+        dest: "{{ project_dir }}/galaxy.yml"
+      register: galaxy_yml_rendering
+
+    - name: Build the collection
+      command: >-
+        ansible-galaxy collection build
+      args:
+        chdir: "{{ project_dir }}"
+      when: galaxy_yml_rendering is changed
+
+    - name: Publish the collection
+      command: >-
+        ansible-galaxy collection publish {{ galaxy_archive_file }}
+      args:
+        chdir: "{{ project_dir }}"
+      when: 
+        - galaxy_yml_rendering is changed
+        - galaxy_upload | bool
