@@ -38,3 +38,4 @@ docs/build
 .env.galaxy
 *.tar.gz
 galaxy.yml
+build/clone

@@ -7,16 +7,17 @@
 
   vars:
     project_dir: "{{ (playbook_dir + '/../') | realpath }}"
+    build_dir: "{{ project_dir }}/build"
+    clone_dir: "{{ build_dir }}/clone"
     dot_ansible_dir: "{{ lookup('env', 'HOME') }}/.ansible"
     galaxy_token_file: "{{ dot_ansible_dir }}/galaxy_token"
     galaxy_token: "{{ lookup('env','ANSIBLE_GALAXY_TOKEN') }}"
-    tag: "{{ gitref.split('/')[-1] }}"
     galaxy_namespace: wescale
     galaxy_name: kubefactory
-    
+    src_galaxy_template: "{{ clone_dir }}/build/templates/galaxy.yml.j2"
     galaxy_archive_name: "{{ galaxy_namespace }}-{{ galaxy_name }}-{{ tag }}.tar.gz"
-    galaxy_archive_file: "{{ project_dir }}/{{ galaxy_archive_name }}"
-    galaxy_meta_file: "{{ project_dir }}/galaxy.yml"
+    galaxy_archive_file: "{{ clone_dir }}/{{ galaxy_archive_name }}"
+    galaxy_meta_file: "{{ clone_dir }}/galaxy.yml"
 
   pre_tasks:
     - name: Ensure the ANSIBLE_GALAXY_TOKEN environment variable is set.
@@ -37,16 +38,15 @@
         dest: "{{ galaxy_token_file }}"
 
   tasks:
-    - file:
-        state: absent
-        path: "{{ item }}"
-      loop:
-        - "{{ galaxy_archive_file }}"
-        - "{{ galaxy_meta_file }}"
+    - name: Clone project at desired gitref
+      git:
+        repo: git@github.com:wescale/kubefactory.git
+        dest: "{{ clone_dir }}"
+        version: "{{ gitref }}"
 
     - name: Render galaxy.yml
       template:
-        src: "galaxy.yml.j2"
+        src: "{{ src_galaxy_template }}"
         dest: "{{ galaxy_meta_file }}"
       register: galaxy_yml_rendering
 
@@ -54,13 +54,13 @@
       command: >-
         ansible-galaxy collection build
       args:
-        chdir: "{{ project_dir }}"
+        chdir: "{{ clone_dir }}"
       when: galaxy_yml_rendering is changed
 
     - name: Publish the collection
       command: >-
         ansible-galaxy collection publish {{ galaxy_archive_file }}
       args:
-        chdir: "{{ project_dir }}"
+        chdir: "{{ clone_dir }}"
       when: 
         - galaxy_yml_rendering is changed
