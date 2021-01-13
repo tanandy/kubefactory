@@ -7,7 +7,7 @@ namespace: "{{ galaxy_namespace }}"
 name: "{{ galaxy_name }}"
 
 # The version of the collection. Must be compatible with semantic versioning
-version: "{{ gitref | regex_replace('v','') }}"
+version: "{{ galaxy_version }}"
 
 # The path to the Markdown (.md) readme file. This path is relative to the root of the collection
 readme: README.md

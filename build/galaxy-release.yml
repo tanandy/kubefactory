@@ -15,7 +15,8 @@
     galaxy_namespace: wescale
     galaxy_name: kubefactory
     src_galaxy_template: "{{ clone_dir }}/build/templates/galaxy.yml.j2"
-    galaxy_archive_name: "{{ galaxy_namespace }}-{{ galaxy_name }}-{{ tag }}.tar.gz"
+    galaxy_version: "{{ gitref | regex_replace('v','') }}"
+    galaxy_archive_name: "{{ galaxy_namespace }}-{{ galaxy_name }}-{{ galaxy_version }}.tar.gz"
     galaxy_archive_file: "{{ clone_dir }}/{{ galaxy_archive_name }}"
     galaxy_meta_file: "{{ clone_dir }}/galaxy.yml"
 
