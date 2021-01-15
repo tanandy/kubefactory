@@ -14,6 +14,7 @@
     galaxy_token: "{{ lookup('env','ANSIBLE_GALAXY_TOKEN') }}"
     galaxy_namespace: wescale
     galaxy_name: kubefactory
+    project_repository: "git@github.com:{{ galaxy_namespace }}/{{ galaxy_name }}.git"
     src_galaxy_template: "{{ clone_dir }}/build/templates/galaxy.yml.j2"
     galaxy_version: "{{ gitref | regex_replace('v','') }}"
     galaxy_archive_name: "{{ galaxy_namespace }}-{{ galaxy_name }}-{{ galaxy_version }}.tar.gz"
@@ -41,7 +42,7 @@
   tasks:
     - name: Clone project at desired gitref
       git:
-        repo: git@github.com:wescale/kubefactory.git
+        repo: "{{ project_repository }}"
         dest: "{{ clone_dir }}"
         version: "{{ gitref }}"
 

@@ -1,0 +1,20 @@
+---
+#
+# Based on https://github.com/jitsi/docker-jitsi-meet
+#
+#- import_tasks: "checks.yml"
+#  when:
+#    - not _nginx_uninstall
+#    - nginx_enable | bool
+
+- include_tasks: "install.yml"
+  when:
+    - not _rproxy_uninstall
+    - rproxy_enable | bool
+
+- include_tasks: "uninstall.yml"
+  when:
+    - _rproxy_uninstall
+    - not (rproxy_enable | bool)
+
+- meta: flush_handlers
