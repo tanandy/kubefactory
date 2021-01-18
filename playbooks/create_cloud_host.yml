@@ -123,4 +123,13 @@
         insertafter: >-
           \[clans:children\]
 
+    - meta: refresh_inventory
 
+
+- import_playbook: "{{ playbook_dir }}/provision_ansible_user.yml"
+  vars:
+    scope: "raw_{{ tf_workspace }}"
+
+- hosts: "{{ tf_workspace }}"
+  tasks:
+    - ping:

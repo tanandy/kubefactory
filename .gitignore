@@ -39,3 +39,4 @@ docs/build
 *.tar.gz
 galaxy.yml
 build/clone
+collections/*

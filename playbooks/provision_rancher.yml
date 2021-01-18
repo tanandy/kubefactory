@@ -1,0 +1,12 @@
+---
+- name: Init host for management
+  hosts: "{{ scope }}"
+  become: yes
+  gather_facts: yes
+  tags:
+    - system
+
+  roles:
+    - rproxy
+    - k3s
+    - rancher

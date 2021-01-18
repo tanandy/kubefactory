@@ -1,27 +1,34 @@
 ---
 - name: Init host for management
   hosts: "{{ scope }}"
+  become: no
   gather_facts: no
-  tags:
-    - system
+  strategy: linear
 
   tasks:
+    - wait_for_connection:
+        timeout: 300
+        sleep: 10
+        
     - name: "Create python alternative to python3"
-      raw: update-alternatives --install /usr/bin/python python /usr/bin/python3 50
-  #
-  # WARNING: Detect and uninstall fail2ban before
-  #
+      raw: >-
+        update-alternatives --install /usr/bin/python python /usr/bin/python3 50
+      args:
+        executable: /bin/bash
+
     - name: "Update package cache (RAW: ALWAYS CHANGED)"
       raw: apt-get update
-      tags:
-        - raw
 
     - name: "Install mandatory packages (RAW: ALWAYS CHANGED)"
       raw: >-
         apt-get install -y {{ clan_system_packages | join(' ') }}
-      tags:
-        - raw
 
+- name: Update system
+  hosts: "{{ scope }}"
+  gather_facts: no
+  become: no
+
+  tasks:
     - name: "Safe-upgrade system"
       apt:
         update_cache: yes
@@ -31,9 +38,7 @@
       apt:
         update_cache: yes
         upgrade: full
-  #
-  # WARNING: Reinstall fail2ban if it was installed before
-  #
+
 - name: Prepare clan caretaker access
   hosts: "{{ scope }}"
   become: no
