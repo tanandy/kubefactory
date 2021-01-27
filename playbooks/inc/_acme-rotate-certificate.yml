@@ -1,0 +1,142 @@
+---
+- name: Sanity checks
+  assert:
+    that:
+      - _domain_to_certify is defined
+      - _domain_to_certify.cn is defined
+      - _domain_to_certify.zone is defined
+
+- name: "{{ _domain_to_certify.cn }} - Cooking variables"
+  set_fact:
+    ssl_private_key_path_basename: "{{ ssl_certs_dir }}/{{ _domain_to_certify.cn }}"
+
+- name: "{{ _domain_to_certify.cn }} - Cooking variables"
+  set_fact:
+    acme_private_key_filename: "{{ ssl_private_key_path_basename }}.acme.key"
+    domain_private_key_filename: "{{ ssl_private_key_path_basename }}.key"
+    csr_filename: "{{ ssl_private_key_path_basename }}.csr"
+    crt_filename: "{{ ssl_private_key_path_basename }}.crt"
+    full_crt_filename: "{{ ssl_private_key_path_basename }}.fullchain.crt"
+
+- name: "{{ _domain_to_certify.cn }} - Generate private keys"
+  openssl_privatekey:
+    path: "{{ item }}"
+    state: present
+    mode: 0640
+    owner: root
+    group: ssl-cert
+  loop:
+    - "{{ acme_private_key_filename }}"
+    - "{{ domain_private_key_filename }}"
+  register: private_key_generation
+
+- name: "{{ _domain_to_certify.cn }} - Generate CSR"
+  openssl_csr:
+    path: "{{ csr_filename }}"
+    privatekey_path: "{{ domain_private_key_filename }}"
+    country_name: "{{ _domain_to_certify.country | default('FR') }}"
+    organization_name: "{{ _domain_to_certify.org | default('galaxie-clans') }}"
+    email_address: "{{ _domain_to_certify.email | default(acme_account_email) }}"
+    common_name: "{{ _domain_to_certify.cn }}"
+    subject_alt_name: "{{ _domain_to_certify.alt | default(omit) }}"
+
+- name: "{{ _domain_to_certify.cn }} - Create acme account"
+  acme_account:
+    acme_directory: "https://acme-v02.api.letsencrypt.org/directory"
+    acme_version: 2
+    account_key_src: "{{ acme_private_key_filename }}"
+    state: present
+    terms_agreed: yes
+    contact:
+      - "mailto:{{ acme_account_email }}"
+  retries: 5
+  delay: 10
+  when: private_key_generation is changed
+
+- name: "{{ _domain_to_certify.cn }} - Create a challenge"
+  acme_certificate:
+    acme_directory: "https://acme-v02.api.letsencrypt.org/directory"
+    acme_version: 2
+    account_key_src: "{{ acme_private_key_filename }}"
+    csr: "{{ csr_filename }}"
+    dest: "{{ crt_filename }}"
+    fullchain_dest: "{{ full_crt_filename }}"
+    challenge: "dns-01"
+  retries: 5
+  delay: 10
+  register: _domain_to_certify_challenge
+
+- name: "{{ _domain_to_certify.cn }} - Create _acme-challenge record"
+  nsupdate:
+    server: "127.0.0.1"
+    zone: "{{ _domain_to_certify.zone }}"
+    record: >-
+      {{ item.key | regex_replace('\.' + _domain_to_certify.zone, '') }}
+    type: TXT
+    value: "{{ item.value }}"
+    state: present
+  loop: "{{ _domain_to_certify_challenge.challenge_data_dns | default({}) | dict2items }}"
+  when:
+    - _domain_to_certify_challenge is changed
+    - _domain_to_certify.alt_multi_domain is not defined
+
+- name: "{{ _domain_to_certify.cn }} - Create _acme-challenge record multi domain"
+  nsupdate:
+    server: "127.0.0.1"
+    zone: "{{ (_domain_to_certify.alt_multi_domain|selectattr('record', 'match', item.key) | list | first).zone }}"
+    record: >-
+      {{
+        item.key | regex_replace(
+          '\.' + ( (_domain_to_certify.alt_multi_domain|selectattr('record', 'match', item.key) | list | first).zone ), ''
+        )
+      }}
+    type: TXT
+    value: "{{ item.value }}"
+    state: present
+  loop: "{{ _domain_to_certify_challenge.challenge_data_dns | default({}) | dict2items }}"
+  when:
+    - _domain_to_certify_challenge is changed
+    - _domain_to_certify.alt_multi_domain is defined
+
+- name: "{{ _domain_to_certify.cn }} - Sync dynamic record with zone file"
+  command: >-
+    rndc sync -clean {{ _domain_to_certify.zone }}
+  when:
+    - _domain_to_certify_challenge is changed
+    - _domain_to_certify.alt_multi_domain is not defined
+
+- name: "{{ _domain_to_certify.cn }} - Sync dynamic record with zone file - multi domain"
+  command: >-
+    rndc sync -clean {{ item.zone }}
+  loop: "{{ _domain_to_certify.alt_multi_domain }}"
+  when:
+    - _domain_to_certify_challenge is changed
+    - _domain_to_certify.alt_multi_domain is defined
+
+- name: "{{ _domain_to_certify.cn }} - Respond acme challenge and save certificate"
+  acme_certificate:
+    acme_directory: "https://acme-v02.api.letsencrypt.org/directory"
+    acme_version: 2
+    account_key_src: "{{ acme_private_key_filename }}"
+    csr: "{{ csr_filename }}"
+    dest: "{{ crt_filename }}"
+    fullchain_dest: "{{ full_crt_filename }}"
+    challenge: "dns-01"
+    data: "{{ _domain_to_certify_challenge }}"
+  retries: 5
+  delay: 10
+  when:
+    - _domain_to_certify_challenge is changed
+
+- name: "{{ _domain_to_certify.cn }} - Adjust file ownership and permissions"
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: ssl-cert
+    mode: 0640
+  loop:
+    - "{{ acme_private_key_filename }}"
+    - "{{ domain_private_key_filename }}"
+    - "{{ csr_filename }}"
+    - "{{ crt_filename }}"
+    - "{{ full_crt_filename }}"

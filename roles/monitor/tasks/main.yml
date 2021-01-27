@@ -1,0 +1,10 @@
+---
+- include_tasks: "install.yml"
+  when:
+    - not _monitor_uninstall
+
+- include_tasks: "uninstall.yml"
+  when:
+    - _monitor_uninstall
+
+- meta: flush_handlers

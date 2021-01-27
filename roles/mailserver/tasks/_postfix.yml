@@ -1,0 +1,80 @@
+# tasks/postfix.yml -- Install and configure Postfix
+---
+- name: Postfix - create group for mail ownership
+  group:
+    name: "{{ postfix_virtual_mailbox_gname }}"
+    gid: "{{ postfix_virtual_mailbox_gid }}"
+
+- name: Postfix - create user for mail ownership
+  user:
+    name: "{{ postfix_virtual_mailbox_uname }}"
+    uid: "{{ postfix_virtual_mailbox_uid }}"
+    home: "{{ postfix_virtual_mailbox_home }}"
+    create_home: yes
+    shell: "{{ postfix_virtual_mailbox_shell }}"
+    group: "{{ postfix_virtual_mailbox_gname }}"
+
+- name: Postfix - install system packages
+  package:
+    name: "{{ mailserver_postfix_packages }}"
+    state: present
+
+- name: Postfix - add postfix user to 'opendmarc' group
+  user:
+    name: postfix
+    groups:
+      - opendmarc
+    append: yes
+  when: opendmarc_keys is defined
+
+- name: Postfix - add postfix user to 'opendkim' group
+  user:
+    name: postfix
+    groups:
+      - opendkim
+    append: yes
+  when: opendkim_keys is defined
+
+- name: Postfix - render main configuration
+  template:
+    src: postfix_main.cf.j2
+    dest: "{{ postfix_config_dir }}/main.cf"
+  notify: Restart postfix service
+
+- name: Postfix - render master configuration
+  template:
+    src: postfix_master.cf.j2
+    dest: "{{ postfix_config_dir }}/master.cf"
+  notify: Restart postfix service
+
+- name: Postfix - render virtual alias domains
+  copy:
+    dest: "{{ postfix_virtual_alias_domains_file }}"
+    content: |-
+      {% for domain in postfix_virtual_aliases_domains %}
+      {{ domain }}
+      {% endfor %}
+  register: _render_virtual_alias_domains
+
+- name: Postfix - update virtual alias domains db
+  shell: >-
+    postmap {{ postfix_virtual_alias_domains }}
+  when: _render_virtual_alias_domains is changed
+  notify: Restart postfix service
+
+- import_tasks: "_postfix_mails.yml"
+
+- name: Postfix - render transports
+  copy:
+    dest: "{{ postfix_transport_maps_file }}"
+    content: |-
+      {% for transport in postfix_transports %}
+      {{ transport.domain }} {{ transport.transport }}
+      {% endfor %}
+  register: _render_transports
+
+- name: Postfix - update transports db
+  shell: >-
+    postmap {{ postfix_transport_maps }}
+  when: _render_transports is changed
+  notify: Restart postfix service

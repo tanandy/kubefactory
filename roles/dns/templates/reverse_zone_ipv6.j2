@@ -1,0 +1,58 @@
+{% set _zone_data = (_bind_reverse_ipv6_zones | selectattr('name', 'equalto', item.name) | list)[0].data  %}
+{{ ansible_managed | comment(decoration='; ') }}
+
+$TTL {{ _zone_data['ttl'] }}
+$ORIGIN {{ (item.1 | ipaddr('revdns'))[-(9+(item.1|regex_replace('^.*/','')|int)//2):] }}
+
+{% if _zone_data['mname']|length > 0 %}
+@ IN SOA {{ _zone_data['mname']|first }}{% if not _zone_data['mname']|first|regex_search('\.$') %}.{{ _zone_data['domain'] }}.{% endif %} {{ _zone_data['rname'] }}. (
+{% else %}
+@ IN SOA {{ ansible_hostname }}.{{ _zone_data['domain'] }}. {{ _zone_data['rname'] }}. (
+{% endif %}
+  {{ _bind_zones[item.name].reverse_ipv6_serial }}
+  {{ _zone_data['refresh'] }}
+  {{ _zone_data['retry'] }}
+  {{ _zone_data['expire'] }}
+  {{ _zone_data['minimum'] }} )
+
+{% if _zone_data['mname']|length > 0 %}
+{% for ns in _zone_data['mname'] %}
+                       IN  NS   {{ ns }}{% if not ns|regex_search('\.$') %}.{{ _zone_data['domain'] }}.{% endif %}
+
+{% endfor %}
+{% else %}
+                       IN  NS   {{ ansible_hostname }}.{{ _zone_data['domain'] }}.
+{% endif %}
+{% for ns in _zone_data['aname'] %}
+                       IN  NS   {{ ns }}.
+{% endfor %}
+
+{% if _zone_data['hosts']|length > 0 %}
+{% for host in _zone_data['hosts'] %}
+{% if host.ipv6 is defined %}
+{% if host.ipv6 == item.1 %}
+@                      IN  PTR  {{ host.name }}.{{ _zone_data['domain'] }}.
+{% else %}
+{% if host.ipv6 is string and host.ipv6.startswith(item.1|regex_replace('/.*$','')) %}
+{% if host.name == '@' %}
+{{ host.ipv6 | ipaddr('revdns') }}{{ (host.ttl|string).rjust(6) if host.ttl is defined else ''.ljust(6) }} IN  PTR  {{ _zone_data['domain'] }}.
+{% else %}
+{{ host.ipv6 | ipaddr('revdns') }}{{ (host.ttl|string).rjust(6) if host.ttl is defined else ''.ljust(6) }} IN  PTR  {{ host.name }}.{{ _zone_data['domain'] }}.
+{% endif %}
+{% else %}
+{% for ip in host.ipv6 %}
+{% if ip.startswith(item.1|regex_replace('/.*$','')) %}
+{{ ip | ipaddr('revdns') }}{{ (host.ttl|string).rjust(6) if host.ttl is defined else ''.ljust(6) }} IN  PTR  {{ _zone_data['domain'] }}.
+{% if host.name == '@' %}
+{% else %}
+{{ ip | ipaddr('revdns') }}{{ (host.ttl|string).rjust(6) if host.ttl is defined else ''.ljust(6) }} IN  PTR  {{ host.name }}.{{ _zone_data['domain'] }}.
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% else %}
+{{ ansible_default_ipv6.address | ipaddr('revdns') }}{{ (host.ttl|string).rjust(6) if host.ttl is defined else ''.ljust(6) }} IN  PTR  {{ ansible_hostname }}.{{ _zone_data['domain'] }}.
+{% endif %}

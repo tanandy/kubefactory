@@ -1,0 +1,22 @@
+---
+- import_tasks: "checks.yml"
+  when:
+    - not _dns_uninstall
+    - dns_enable | bool
+
+- include_tasks: "install.yml"
+  when:
+    - not _dns_uninstall
+    - dns_enable | bool
+
+- debug:
+    msg: Set variable 'dns_enable' to 'yes' if you want.
+  when:
+    - not (dns_enable | bool)
+
+- include_tasks: "uninstall.yml"
+  when:
+    - _dns_uninstall
+    - not (dns_enable | bool)
+
+- meta: flush_handlers

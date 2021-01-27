@@ -1,0 +1,5 @@
+---
+_monitor_uninstall: "{{ monitor_uninstall | default(false) | bool }}"
+
+monitor_system_packages:
+  - netdata

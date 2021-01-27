@@ -1,8 +1,9 @@
 ---
 - name: Init host for management
-  hosts: "{{ scope }}"
+  hosts: "{{ workspace }}"
   become: yes
   gather_facts: yes
+  strategy: linear
   tags:
     - system
 

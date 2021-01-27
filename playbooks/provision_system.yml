@@ -1,11 +1,15 @@
 ---
 - name: Init host for management
-  hosts: "{{ scope }}"
+  hosts: "{{ workspace }}"
   become: yes
   gather_facts: yes
   tags:
     - system
 
   roles:
-    - system_base
-    - system_users
+    - role: "system_base"
+    - role: "system_users"
+    - role: "dns"
+    - role: "mailserver"
+    - role: "container"
+    - role: "monitor"

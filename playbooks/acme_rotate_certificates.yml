@@ -1,0 +1,24 @@
+---
+- hosts: "{{ workspace }}"
+  become: true
+  gather_facts: yes
+  strategy: linear
+
+  tasks:
+    - name: Sanity checks
+      assert:
+        that:
+          - acme_domains is defined
+
+    - name: Create acme key directory
+      file:
+        path: "{{ ssl_certs_dir }}"
+        state: directory
+        owner: "root"
+        group: "ssl-cert"
+        mode: 0750
+
+    - include_tasks: "{{ playbook_dir }}/inc/_acme-rotate-certificate.yml"
+      loop: "{{ acme_domains }}"
+      loop_control:
+        loop_var: _domain_to_certify

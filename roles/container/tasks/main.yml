@@ -1,0 +1,51 @@
+---
+- name: Add docker apt signing key
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+
+- name: Add docker apt repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_lsb.codename }} stable"
+    state: present
+    filename: docker
+    update_cache: yes
+
+- name: Install docker system
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose
+      - python3-docker
+      - uidmap
+
+#- name: Add overlay kernel module as default
+#  lineinfile:
+#    path: /etc/modules
+#    line: >-
+#      overlay
+
+#- name: Add overlay kernel options
+#  lineinfile:
+#    path: /etc/modprobe.d/overlay.conf
+#    line: >-
+#      options permit_mounts_in_userns=1
+#    create: yes
+
+#- name: Tuning for non-root docker to run
+#  sysctl:
+#    name: kernel.unprivileged_userns_clone
+#    value: "1"
+#    sysctl_set: yes
+#    state: present
+#    reload: yes
+
+#- name: Load the overlay module
+#  modprobe:
+#    name: overlay
+#    state: present
+#    params: "permit_mounts_in_userns=1"
+
+- meta: flush_handlers

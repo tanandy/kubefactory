@@ -1,0 +1,46 @@
+---
+- name: Add Netdata repository key
+  apt_key:
+    url: "https://packagecloud.io/netdata/netdata/gpgkey"
+    state: present
+
+- name: Add netdata repositories
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+    filename: netdata
+    update_cache: yes
+  loop:
+    - "deb https://packagecloud.io/netdata/netdata/debian/ buster main"
+    - "deb-src https://packagecloud.io/netdata/netdata/debian/ buster main"
+
+- name: Install system package
+  apt:
+    name: "{{ monitor_system_packages }}"
+    state: present
+
+- name: Configure netdata service
+  template:
+    src: "netdata.conf.j2"
+    dest: "/etc/netdata/netdata.conf"
+  notify: Restart netdata service
+
+- name: Configure python plugins
+  template:
+    src: "python.d.conf.j2"
+    dest: "/etc/netdata/python.d.conf"
+  notify: Restart netdata service
+
+- name: Add netdata user to docker group
+  user:
+    name: netdata
+    groups:
+      - docker
+      - adm
+    append: yes
+
+- name: Activate netdata service
+  systemd:
+    name: netdata
+    state: started
+    enabled: yes
