@@ -1,0 +1,35 @@
+---
+- hosts: "{{ workspace }}"
+  gather_facts: no
+  become: no
+
+  vars:
+    terraform_dir: "{{ ansible_pwd }}/terraform/{{ workspace }}/rancher_bootstrap"
+    secrets_dir: "{{ ansible_pwd }}/secrets/rancher/{{ workspace }}"
+    admin_password_file: "{{ secrets_dir }}/rancher_admin.password"
+    admin_password: "{{ lookup('password', admin_password_file + ' length=16') }}"
+
+  tasks:
+    - name: Create directories
+      file:
+        path: "{{ secrets_dir }}"
+        state: directory
+      loop:
+        - "{{ secrets_dir }}"
+        - "{{ terraform_dir }}"
+      delegate_to: localhost
+
+    - name: Render terraform code - rancher bootstrap
+      template:
+        src: rancher_bootstrap.tf.j2
+        dest: "{{ terraform_dir }}/main.tf"
+      delegate_to: localhost
+
+    - name: Apply terraform
+      terraform:
+        project_path: "{{ terraform_dir }}"
+        state: present
+        force_init: true
+        workspace: "{{ workspace }}"
+      register: tf_apply
+      delegate_to: localhost

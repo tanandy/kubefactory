@@ -60,6 +60,13 @@
       when: 
         - not force
 
+    - meta: end_play
+      when:
+        - not a_record_exists
+        - not aaaa_record_exists
+        - not ns_record_exists
+        - mode == 'destroy'
+
     - name: Subdomain delegation - A record to SOA
       uri:
         method: "{{ (mode == 'destroy') | ternary ('DELETE', 'POST') }}"

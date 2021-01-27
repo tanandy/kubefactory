@@ -99,9 +99,11 @@ Run:
 
     .. code:: bash
 
-        export WORKSPACE=gaocho && \
+        export WORKSPACE=lab && \
         ansible-playbook playbooks/create_cloud_host.yml -e workspace=${WORKSPACE} && \
         ansible-playbook playbooks/provision_system.yml -e workspace=${WORKSPACE} && \
+        ansible-playbook playbooks/dns_subdomain_gandi.yml -e workspace=${WORKSPACE} -e mode=destroy -e force=true && \
         ansible-playbook playbooks/dns_subdomain_gandi.yml -e workspace=${WORKSPACE} && \
         ansible-playbook playbooks/acme_rotate_certificates.yml -e workspace=${WORKSPACE} && \
-        ansible-playbook playbooks/provision_rancher.yml -e workspace=${WORKSPACE}
+        ansible-playbook playbooks/provision_rancher.yml -e workspace=${WORKSPACE} && \
+        ansible-playbook playbooks/rancher_bootstrap.yml -e workspace=${WORKSPACE}

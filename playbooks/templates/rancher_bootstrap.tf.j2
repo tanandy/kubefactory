@@ -1,0 +1,19 @@
+terraform {
+  required_providers {
+    rancher2 = {
+      source = "rancher/rancher2"
+      version = "1.11.0"
+    }
+  }
+}
+
+provider "rancher2" {
+  api_url   = "https://{{ rancher_public_domain }}"
+  bootstrap = true
+}
+
+resource "rancher2_bootstrap" "admin" {
+  password = "{{ admin_password }}"
+  telemetry = false
+  ui_default_landing = "ember"
+}
