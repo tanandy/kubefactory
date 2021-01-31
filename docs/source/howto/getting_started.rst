@@ -6,10 +6,11 @@ Prerequisites
 =============
 
 * ``make``
-* ``python>= 3.7.3``
+* ``python >= 3.7.3``
 * ``virtualenv``
 * ``pip3``
 * `direnv <https://direnv.net/docs/installation.html>`_ 
+* ``terraform >= 0.14``
 
 Setup workspace
 ===============
@@ -25,4 +26,8 @@ Setup workspace
     direnv allow .
     make env
 
+.. admonition:: CONGRATULATIONS
+    :class: important
+
+    You are ready to play with the kubefactory project.
 
