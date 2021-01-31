@@ -7,6 +7,8 @@
 
   vars:
     project_repository: "git@gitlab.com:wescalefr-oss/ansible/collections/kubefactory.git"
+    galaxy_namespace: wescale
+    galaxy_name: kubefactory
 
     project_dir: "{{ (playbook_dir + '/../') | realpath }}"
     build_dir: "{{ project_dir }}/build"
