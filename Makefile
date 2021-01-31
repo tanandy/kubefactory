@@ -1,8 +1,4 @@
 env:
-	direnv allow .
-	direnv reload
-	pip3 install -U -r requirements.txt --no-cache
+	pip3 install -U --no-cache pip setuptools wheel
+	pip3 install -U --no-cache -r requirements.txt 
 	ansible-galaxy collection install -fr requirements.yml
-	direnv reload
-
-# instance:
