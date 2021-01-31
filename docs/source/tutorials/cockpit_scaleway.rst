@@ -2,6 +2,8 @@ git ###############################################
 Install your Rancher cockpit on a Scaleway host
 ###############################################
 
+Be sure to read the :ref:`howto/getting_started`
+
 This tutorial will guide you through:
 
 * Deploy a server on Scaleway Public Cloud
