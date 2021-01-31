@@ -1,8 +1,8 @@
-*******************************
-Reference: Information-oriented
-*******************************
+##########################################
+References
+##########################################
 
 .. toctree::
    :maxdepth: 1
 
-   reference/ufw
+   reference/playbook_create_cloud_host

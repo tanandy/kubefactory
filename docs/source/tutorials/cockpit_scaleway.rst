@@ -1,6 +1,6 @@
-###############################################
-Install your Rancher cockpit on a Scaleway host
-###############################################
+##########################################
+Install Rancher on a Scaleway instance
+##########################################
 
 Be sure to read the :doc:`/howto/getting_started`
 
@@ -15,24 +15,24 @@ This tutorial will guide you through:
     This is no marketing bullshit intending to push you into renting a Scaleway server.
     I (the writer) find it fine for demonstration and learning. Feel free to adapt it to your needs/will.
 
+******
 Ready?
 ******
 
 * Configure a DNS to delegate a SOA to your server.
 
+******
 Set.
-****
+******
 
 * Choose the name of your Rancher platform. It must be a valid dns subdomain, as it will be also used for that purpose. In this tutorial we choose 'lab'
 
+******
 Go!
-***
-
-First contact
-=============
+******
 
 Create a Scaleway instance
---------------------------
+==========================================
 
 Run:
 
@@ -44,7 +44,7 @@ Run:
 Expected:
 
 Provision system
-----------------
+==========================================
 
 Run:
 
@@ -53,7 +53,7 @@ Run:
     ansible-playbook playbooks/provision_system.yml -e workspace=lab
 
 Delegate a subdomain
---------------------
+==========================================
 
 Run:
 
@@ -64,7 +64,7 @@ Run:
 
 
 Provision certificates
-----------------------
+==========================================
 
 Run:
 
@@ -73,7 +73,7 @@ Run:
     ansible-playbook playbooks/acme_rotate_certificates.yml -e workspace=lab
 
 Provision Rancher
-----------------------
+==========================================
 
 Run:
 
