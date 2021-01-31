@@ -7,9 +7,9 @@
     - system
 
   roles:
-    - role: "system_base"
-    - role: "system_users"
-    - role: "dns"
-    - role: "mailserver"
-    - role: "container"
-    - role: "monitor"
+    - role: "rtnp.galaxie_clans.system_base"
+    - role: "rtnp.galaxie_clans.system_users"
+    - role: "rtnp.galaxie_clans.dns"
+    - role: "rtnp.galaxie_clans.mailserver"
+    - role: "rtnp.galaxie_clans.container"
+    - role: "rtnp.galaxie_clans.monitor"

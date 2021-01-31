@@ -1,31 +1,17 @@
-# The namespace of the collection. This can be a company/brand/organization or product namespace under which all
-# content lives. May only contain alphanumeric lowercase characters and underscores. Namespaces cannot start with
-# underscores or numbers and cannot contain consecutive underscores
-namespace: "{{ galaxy_namespace }}"
-
-# The name of the collection. Has the same character restrictions as 'namespace'
-name: "{{ galaxy_name }}"
-
-# The version of the collection. Must be compatible with semantic versioning
+---
+namespace: "wescale"
+name: "kubefactory"
 version: "{{ galaxy_version }}"
-
-# The path to the Markdown (.md) readme file. This path is relative to the root of the collection
 readme: README.md
 
 # A list of the collection's content authors. Can be just the name or in the format 'Full Name <email> (url)
 # @nicks:irc/im.site#channel'
 authors:
-- Aurélien Maury <aurelien.maury@wescale.fr>
+  - Aurélien Maury <aurelien.maury@wescale.fr>
 
-
-### OPTIONAL but strongly recommended
-
-# A short summary description of the collection
 description: >-
   Deploy and manage a Rancher platform. 
 
-# Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
-# accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
 license:
   - GPL-3.0-or-later
 
@@ -39,6 +25,7 @@ tags: []
 # range specifiers can be set and are separated by ','
 dependencies: {}
 
+# The URL of the originating SCM repository
 # The URL of the originating SCM repository
 repository: >-
   https://gitlab.com/wescalefr-oss/ansible/collections/kubefactory
@@ -55,6 +42,10 @@ homepage: >-
 issues: >-
   https://gitlab.com/wescalefr-oss/ansible/collections/kubefactory/-/issues
 
+#
+# Since: ansible>=2.10
+# Backported with love in build/release_collection.yml
+#
 build_ignore:
   - ".direnv"
   - "*.tar.gz"
@@ -62,3 +53,22 @@ build_ignore:
   - ".gitignore"
   - "requirements.txt"
   - "Makefile"
+  - "keys"
+  - "host_vars"
+  - "tests"
+  - "docs"
+  - "snippets"
+  - "secrets"
+  - ".envrc"
+  - ".gitignore"
+  - "ansible.cfg"
+  - "requirements.*"
+  - "mkdocs.yml"
+  - "ops_*.yml"
+  - "hosts.sample"
+  - ".ansible-lint"
+  - "build"
+  - "group_vars"
+  - "documentation/conf.py"
+  - "documentation/Makefile"
+  - "documentation/requirements.txt"

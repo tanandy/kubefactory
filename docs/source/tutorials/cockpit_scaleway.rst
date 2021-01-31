@@ -1,31 +1,27 @@
-###########################
-Install your Rancher cockpit on a Scaleway
-###########################
+###############################################
+Install your Rancher cockpit on a Scaleway host
+###############################################
 
-This tutorial will guide you through installing a fresh clan instance on a Kimsufi server, from zero to
-all services enabled. 
+This tutorial will guide you through:
+
+* Deploy a server on Scaleway Public Cloud
+* Delegate a dns subdomain authority to it
+* Install K3S and Rancher
 
 .. note::
 
-    This is no marketing bullshit intending to push you into renting a Kimsufi server.
-    This is only based on our available infrastructure at the time of writing.
+    This is no marketing bullshit intending to push you into renting a Scaleway server.
+    I (the writer) find it fine for demonstration and learning. Feel free to adapt it to your needs/will.
 
 Ready?
 ******
 
-* Have a ready `galaxie-clans` workspace (see [How to setup a galaxie-clans workspace](_howto_setup.md)).
-* Have a `Kimsufi <https://www.kimsufi.com/>`_ server, installed with the template ``Debian 9 (Stretch) (64bits)``.
-* Validate you are able to log as `root`.
 * Configure a DNS to delegate a SOA to your server.
 
 Set.
 ****
 
-* We will call our host ``kimserver``. If you want to rename it, be aware to replace any occurence in the following steps.
-* We will use the label ``$KIM_IPV4`` instead of a real IP address. replace with actual values when following instructions.
-* The domain that ``kimserver`` is SOA for, will be named ``tuto.galaxie.clans``. Replace any occurence in the following steps with the domain you chose.
-* The name of the clan we are founding is ``kimclan``
-* All commands are to be run from the root of your ``galaxie-clans`` workspace.
+* Choose the name of your Rancher platform. It must be a valid dns subdomain, as it will be also used for that purpose. In this tutorial we choose 'lab'
 
 Go!
 ***
@@ -33,14 +29,14 @@ Go!
 First contact
 =============
 
-Create a scaleway instance
+Create a Scaleway instance
 --------------------------
 
 Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/create_cloud_host.yml -e workspace=gaocho
+    ansible-playbook playbooks/create_cloud_host.yml -e workspace=lab
 
 
 Expected:
@@ -52,7 +48,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/provision_system.yml -e workspace=gaocho
+    ansible-playbook playbooks/provision_system.yml -e workspace=lab
 
 Delegate a subdomain
 --------------------
@@ -61,7 +57,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/dns_subdomain_gandi.yml -e workspace=gaocho
+    ansible-playbook playbooks/dns_subdomain_gandi.yml -e workspace=lab
 
 
 
@@ -72,7 +68,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/acme_rotate_certificates.yml -e workspace=factory
+    ansible-playbook playbooks/acme_rotate_certificates.yml -e workspace=lab
 
 Provision Rancher
 ----------------------
@@ -81,7 +77,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/provision_rancher.yml -e workspace=factory
+    ansible-playbook playbooks/provision_rancher.yml -e workspace=lab
 
 ----
 
@@ -89,8 +85,6 @@ Run:
     :class: important
 
     Your cockpit is founded!
-
-    Welcome in the galaxie-clans's community.
 
 ----
 

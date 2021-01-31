@@ -1,7 +1,0 @@
-# roles/bind/handlers/main.yml
----
-- name: Restart bind
-  service:
-    name: "{{ bind_service }}"
-    state: restarted
-    enabled: yes
