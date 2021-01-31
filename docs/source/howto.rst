@@ -6,4 +6,3 @@ How-to Guides: Problem-oriented
    :maxdepth: 1
 
    howto/getting_started
-   howto/contribute

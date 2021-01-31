@@ -14,6 +14,8 @@ This documentation structure is borrowed from Daniele Procida's presentation at 
 
 Blessed be he for his teachings. `Learn more... <https://documentation.divio.com/>`_
 
+Project icon made by `Freepik <https://www.freepik.com>`_ from `Flaticon <https://www.flaticon.com/>`_.
+
 Indices and tables
 ==================
 

@@ -22,8 +22,7 @@ copyright = '2021, WeScale'
 author = 'WeScale'
 
 # The full version, including alpha/beta/rc tags
-release = 'v1.0'
-
+release = 'v0.0.6'
 
 # -- General configuration ---------------------------------------------------
 
@@ -61,7 +60,7 @@ exclude_patterns = []
 html_theme = "furo"
 #html_theme = "python_docs_theme"
 
-html_logo = "_static/img/logo.svg"
+html_logo = "_static/img/factory.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
