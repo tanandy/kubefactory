@@ -1,6 +1,6 @@
 ---
 - name: Init host for management
-  hosts: "raw_{{ workspace }}"
+  hosts: "raw_{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') )}}"
   become: yes
   gather_facts: no
   strategy: linear
@@ -24,7 +24,7 @@
         apt-get install -y {{ clan_system_packages | join(' ') }}
 
 - name: Update system
-  hosts: "raw_{{ workspace }}"
+  hosts: "raw_{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') )}}"
   gather_facts: no
   become: yes
 
@@ -40,7 +40,7 @@
         upgrade: full
 
 - name: Prepare clan caretaker access
-  hosts: "raw_{{ workspace }}"
+  hosts: "raw_{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') )}}"
   become: yes
   gather_facts: no
   tags:

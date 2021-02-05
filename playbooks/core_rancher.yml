@@ -1,6 +1,6 @@
 ---
-- name: Init host for management
-  hosts: "{{ workspace }}"
+- name: Deploy K3S and Rancher
+  hosts: "{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') )}}"
   become: yes
   gather_facts: yes
   strategy: linear
@@ -8,13 +8,13 @@
     - system
 
   roles:
-    - role: "rproxy"
+    - role: "rtnp.galaxie_clans.rproxy"
       vars:
         rproxy_nginx_enable_sites: no
 
     - role: "k3s"
     - role: "rancher"
 
-    - role: "rproxy"
+    - role: "rtnp.galaxie_clans.rproxy"
       vars:
         rproxy_nginx_enable_sites: yes

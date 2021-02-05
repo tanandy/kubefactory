@@ -1,5 +1,5 @@
 ---
-- hosts: "{{ scope }}"
+- hosts: "{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') ) }}"
   become: true
   gather_facts: yes
 

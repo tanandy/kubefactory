@@ -1,6 +1,6 @@
 ---
 - name: System services
-  hosts: "{{ workspace }}"
+  hosts: "{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') )}}"
   become: yes
   gather_facts: yes
   tags:

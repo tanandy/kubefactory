@@ -43,7 +43,7 @@ Run:
 
 Expected:
 
-Provision system
+Init server
 ==========================================
 
 Run:
@@ -51,6 +51,16 @@ Run:
 .. code:: bash
 
     ansible-playbook playbooks/core_init.yml -e workspace=lab
+
+
+Provision system
+==========================================
+
+Run:
+
+.. code:: bash
+
+    ansible-playbook playbooks/core_services.yml -e workspace=lab
 
 Delegate a subdomain
 ==========================================
@@ -79,7 +89,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/provision_rancher.yml -e workspace=lab
+    ansible-playbook playbooks/core_rancher.yml -e workspace=lab
 
 ----
 
@@ -95,11 +105,12 @@ Run:
 
     .. code:: bash
 
-        export WORKSPACE=lab && \
-        ansible-playbook playbooks/create_cloud_host.yml -e workspace=${WORKSPACE} && \
-        ansible-playbook playbooks/provision_system.yml -e workspace=${WORKSPACE} && \
-        ansible-playbook playbooks/dns_subdomain_gandi.yml -e workspace=${WORKSPACE} -e mode=destroy -e force=true && \
-        ansible-playbook playbooks/dns_subdomain_gandi.yml -e workspace=${WORKSPACE} && \
-        ansible-playbook playbooks/acme_rotate_certificates.yml -e workspace=${WORKSPACE} && \
-        ansible-playbook playbooks/provision_rancher.yml -e workspace=${WORKSPACE} && \
-        ansible-playbook playbooks/rancher_bootstrap.yml -e workspace=${WORKSPACE}
+        export KUBEFACTORY_WORKSPACE=lab && \
+        ansible-playbook playbooks/tf_core.yml && \
+        ansible-playbook playbooks/core_init.yml && \
+        ansible-playbook playbooks/gandi_delegate_subdomain.yml -e mode=destroy -e force=true && \
+        ansible-playbook playbooks/gandi_delegate_subdomain.yml && \
+        ansible-playbook playbooks/core_services.yml && \
+        ansible-playbook playbooks/acme_rotate_certificates.yml && \
+        ansible-playbook playbooks/core_rancher.yml
+
