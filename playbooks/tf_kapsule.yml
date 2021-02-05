@@ -1,0 +1,28 @@
+---
+- hosts: localhost
+  become: no
+  gather_facts: no
+  strategy: linear
+
+  vars:
+    tf_stack: kapsule
+    tf_action: apply
+    tf_stack_dir: "{{ ansible_pwd }}/terraform/{{ tf_stack }}"
+
+  tasks:
+    - name: Sanity checks
+      assert:
+        that:
+          - workspace is defined
+          - workspace != 'default'
+          - tf_action in ['apply', 'destroy']
+        msg: "'workspace' must be defined and not 'default'"
+
+    - name: "Apply workspace {{ workspace }} on {{ tf_stack }}"
+      terraform:
+        project_path: "{{ tf_stack_dir }}"
+        state: "{{ (tf_action == 'destroy') | ternary('absent', 'present') }}"
+        force_init: true
+        workspace: "{{ workspace }}"
+      register: tf_apply
+

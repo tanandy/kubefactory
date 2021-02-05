@@ -1,13 +1,11 @@
 ---
 - name: Init host for management
-  hosts: "{{ scope }}"
+  hosts: "raw_{{ workspace }}"
   become: yes
   gather_facts: no
   strategy: linear
 
   tasks:
-    - debug:
-        msg: "SCOPE = {{ scope }}"
     - wait_for_connection:
         timeout: 300
         sleep: 10
@@ -26,7 +24,7 @@
         apt-get install -y {{ clan_system_packages | join(' ') }}
 
 - name: Update system
-  hosts: "{{ scope }}"
+  hosts: "raw_{{ workspace }}"
   gather_facts: no
   become: yes
 
@@ -42,7 +40,7 @@
         upgrade: full
 
 - name: Prepare clan caretaker access
-  hosts: "{{ scope }}"
+  hosts: "raw_{{ workspace }}"
   become: yes
   gather_facts: no
   tags:

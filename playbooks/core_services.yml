@@ -1,5 +1,5 @@
 ---
-- name: Init host for management
+- name: System services
   hosts: "{{ workspace }}"
   become: yes
   gather_facts: yes

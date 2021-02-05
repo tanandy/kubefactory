@@ -38,7 +38,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/create_cloud_host.yml -e workspace=lab
+    ansible-playbook playbooks/tf_core.yml -e workspace=lab
 
 
 Expected:
@@ -50,7 +50,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/provision_system.yml -e workspace=lab
+    ansible-playbook playbooks/core_init.yml -e workspace=lab
 
 Delegate a subdomain
 ==========================================
@@ -59,7 +59,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/dns_subdomain_gandi.yml -e workspace=lab
+    ansible-playbook playbooks/gandi_delegate_subdomain.yml -e workspace=lab
 
 
 

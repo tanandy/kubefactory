@@ -4,26 +4,23 @@
   gather_facts: no
 
   vars:
-# configuration variables
-    tf_stack: scw
-    # workspace: 
-# utils variables    
-    project_dir: "{{ (playbook_dir + '/..') | realpath }}" 
-    tf_stack_dir: "{{ project_dir }}/terraform/{{ tf_stack }}"
+    tf_stack_dir: "{{ ansible_pwd }}/terraform/core"
+    tf_action: "apply"
 
-    ssh_private_key_file: "{{ project_dir }}/keys/{{ workspace }}.key"
+    ssh_private_key_file: "{{ keys_dir }}/{{ workspace }}.key"
     ssh_public_key_file: "{{ ssh_private_key_file }}.pub"
     
     ready_host_name: "{{ workspace }}"
     raw_host_name: "raw_{{ workspace }}"
-    clan_name: "{{ tf_stack }}_{{ workspace }}_clan"
-    ready_host_vars_dir: "{{ project_dir }}/host_vars/{{ workspace }}"
-    ready_host_vars_file: "{{ ready_host_vars_dir }}/tf_vars.yml"
+    
+    clan_name: "{{ workspace }}_clan"
+    
+    ready_host_vars_dir: "{{ host_vars_dir }}/{{ ready_host_name }}"
+    ready_tf_host_vars_file: "{{ ready_host_vars_dir }}/tf_vars.yml"
     ready_srv_host_vars_file: "{{ ready_host_vars_dir }}/services.yml"
 
-    tfstate_dir: "{{ project_dir }}/tfstates"
-    raw_host_vars_dir: "{{ project_dir }}/host_vars/raw_{{ workspace }}"
-    raw_host_vars_file: "{{ raw_host_vars_dir }}/tf_vars.yml"
+    raw_host_vars_dir: "{{ host_vars_dir }}/{{ raw_host_name }}"
+    raw_tf_host_vars_file: "{{ raw_host_vars_dir }}/tf_vars.yml"
 
   tasks:
     - name: Sanity checks
@@ -38,37 +35,55 @@
         path: "{{ item }}"
         state: directory
       loop:
-        - "{{ tfstate_dir }}"
-        - "{{ tfstate_dir }}/{{ workspace }}"
-        - "{{ project_dir }}/keys"
-
+        - "{{ keys_dir }}"
+        - "{{ ready_host_vars_dir }}"
+        - "{{ raw_host_vars_dir }}"
+      when: tf_action == 'apply'
+        
     - name: Create a dedicated keypair
       openssh_keypair:
         path: "{{ ssh_private_key_file }}"
         type: ed25519
+      when: tf_action == 'apply'
 
-    - name: "Apply workspace {{ workspace }} on {{ tf_stack }}"
+    - name: Remove clan link from inventory
+      lineinfile:
+        path: "{{ ansible_pwd }}/hosts"
+        state: absent
+        line: >-
+          {{ clan_name }}
+      when: tf_action == 'destroy'
+
+    - name: Remove clan definition from inventory group
+      blockinfile:
+        path: "{{ ansible_pwd }}/hosts"
+        state: absent
+        marker: "# {mark} -- playbooks/create_cloud_host.yml -- {{ workspace }}"
+      when: tf_action == 'destroy'
+
+    - name: Remove clan configuration from ssh config file
+      blockinfile:
+        path: "{{ ansible_pwd }}/ssh.cfg"
+        state: absent
+        marker: "# {mark} -- playbooks/create_cloud_host.yml -- {{ workspace }}"
+      when: tf_action == 'destroy'
+
+    - name: Terraform
       terraform:
         project_path: "{{ tf_stack_dir }}"
-        state: present
+        state: "{{ (tf_action == 'destroy') | ternary('absent', 'present') }}"
         force_init: true
         workspace: "{{ workspace }}"
         variables:
           ssh_public_key_file: "{{ ssh_public_key_file }}"
-      register: tf_apply
+      register: tf_result
 
-    - set_fact:
-        public_ipv4: "{{ tf_apply.outputs.ipv4.value }}"
-        public_ipv6: "{{ tf_apply.outputs.ipv6.value }}"
-        raw_ssh_user: "{{ tf_apply.outputs.raw_ssh_user.value }}"
-
-    - name: Create host vars directory
-      file:
-        path: "{{ item }}"
-        state: directory
-      loop:
-        - "{{ raw_host_vars_dir }}"
-        - "{{ ready_host_vars_dir }}"
+    - name: Terraform output extract
+      set_fact:
+        public_ipv4: "{{ tf_result.outputs.ipv4.value }}"
+        public_ipv6: "{{ tf_result.outputs.ipv6.value }}"
+        raw_ssh_user: "{{ tf_result.outputs.raw_ssh_user.value }}"
+      when: tf_action == 'apply'
 
     - name: Render terraform host vars
       copy:
@@ -78,20 +93,22 @@
           workspace: "{{ workspace }}"
           caretaker_authorized_key_files:
             - "{{ ssh_public_key_file }}"
-          public_ipv4: "{{ tf_apply.outputs.ipv4.value }}"
-          public_ipv6: "{{ tf_apply.outputs.ipv6.value }}"
+          public_ipv4: "{{ public_ipv4 }}"
+          public_ipv6: "{{ public_ipv6 }}"
       loop:
-        - "{{ raw_host_vars_file }}"
-        - "{{ ready_host_vars_file }}"
+        - "{{ raw_tf_host_vars_file }}"
+        - "{{ ready_tf_host_vars_file }}"
+      when: tf_action == 'apply'
 
     - name: Render terraform host vars
       template:
         src: host_vars.yml.j2
         dest: "{{ ready_srv_host_vars_file }}"
+      when: tf_action == 'apply'
 
     - name: Add raw and ready host definitions to ssh config
       blockinfile:
-        path: "{{ project_dir }}/ssh.cfg"
+        path: "{{ ansible_pwd }}/ssh.cfg"
         state: present
         create: yes
         marker: "# {mark} -- playbooks/create_cloud_host.yml -- {{ workspace }}"
@@ -109,10 +126,11 @@
             IdentityFile {{ ssh_private_key_file }}
             IdentitiesOnly yes
             StrictHostKeyChecking no
+      when: tf_action == 'apply'
 
     - name: Add raw and ready host definitions to inventory group
       blockinfile:
-        path: "{{ project_dir }}/hosts"
+        path: "{{ ansible_pwd }}/hosts"
         state: present
         create: yes
         marker: "# {mark} -- playbooks/create_cloud_host.yml -- {{ workspace }}"
@@ -120,23 +138,17 @@
           [{{ clan_name }}]
           {{ raw_host_name }}
           {{ ready_host_name }}    
+      when: tf_action == 'apply'
 
     - name: Link created host group to 'clans' group in inventory
       lineinfile:
-        path: "{{ project_dir }}/hosts"
+        path: "{{ ansible_pwd }}/hosts"
         state: present
         line: >-
           {{ clan_name }}
         insertafter: >-
           \[clans:children\]
+      when: tf_action == 'apply'
 
     - meta: refresh_inventory
 
-- import_playbook: "{{ playbook_dir }}/provision_ansible_user.yml"
-  vars:
-    scope: "raw_{{ workspace }}"
-
-- hosts: "{{ workspace }}"
-  become: yes
-  tasks:
-    - ping:

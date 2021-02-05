@@ -1,5 +1,7 @@
 ---
 ansible_pwd: "{{ lookup('env', 'PWD') }}"
+keys_dir: "{{ ansible_pwd }}/keys"
+host_vars_dir: "{{ ansible_pwd }}/host_vars"
 
 gandi_api_key: "{{ lookup('env', 'GANDI_API_KEY') }}"
 gandi_domain: "{{ lookup('env', 'GANDI_DOMAIN') }}"

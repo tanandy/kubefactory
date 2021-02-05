@@ -1,0 +1,20 @@
+---
+- name: Init host for management
+  hosts: "{{ workspace }}"
+  become: yes
+  gather_facts: yes
+  strategy: linear
+  tags:
+    - system
+
+  roles:
+    - role: "rproxy"
+      vars:
+        rproxy_nginx_enable_sites: no
+
+    - role: "k3s"
+    - role: "rancher"
+
+    - role: "rproxy"
+      vars:
+        rproxy_nginx_enable_sites: yes
