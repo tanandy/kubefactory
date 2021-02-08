@@ -3,9 +3,9 @@
 # GENERAL
 #
 
-local_secrets_dir: "{{ (playbook_dir + '/../secrets') | realpath }}"
-local_keys_dir: "{{ (playbook_dir + '/../keys') | realpath }}"
-local_backups_dir: "{{ (playbook_dir + '/../backups') | realpath }}"
+local_secrets_dir: "{{ workspace_secrets_dir }}"
+local_keys_dir: "{{ workspace_secrets_dir }}"
+local_backups_dir: "{{ workspace_secrets_dir }}"
 ssl_certs_dir: "/etc/ssl/private"
 caretaker_authorized_key_files:
   - "{{ (playbook_dir + '/../keys/' + inventory_hostname + '.key.pub') | realpath }}"

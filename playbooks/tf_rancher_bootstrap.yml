@@ -1,0 +1,43 @@
+---
+- hosts: "{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') ) }}"
+  gather_facts: no
+  become: no
+
+  vars:
+    terraform_dir: "{{ workspace_terraform_dir }}/rancher_bootstrap"
+    rancher_admin_password_file: "{{ workspace_secrets_dir }}/rancher_admin.password"
+    admin_password: "{{ lookup('password', rancher_admin_password_file + ' length=16') }}"
+
+  tasks:
+    - import_tasks: "{{ playbook_dir }}/inc/_tf_sanity_checks.yml"
+      
+    - name: Create terraform directory
+      delegate_to: localhost
+      file:
+        path: "{{ terraform_dir }}"
+        state: directory
+      
+
+    - name: Render terraform code - rancher bootstrap
+      delegate_to: localhost
+      template:
+        src: rancher_bootstrap.tf.j2
+        dest: "{{ terraform_dir }}/main.tf"
+      
+    - name: Apply terraform
+      delegate_to: localhost
+      terraform:
+        project_path: "{{ terraform_dir }}"
+        state: present
+        force_init: true
+        workspace: "{{ workspace }}"
+      register: tf_apply
+
+    - name: Render rancher access as ansible var file
+      delegate_to: localhost
+      copy:
+        dest: "{{ workspace_host_vars_dir }}/tf_rancher_bootstrap.yml"
+        content: |-
+          ---
+          rancher_username: "{{ tf_apply.outputs.rancher_username.value }}"
+          rancher_token: "{{ tf_apply.outputs.rancher_token.value }}"

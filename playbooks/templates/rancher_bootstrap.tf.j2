@@ -17,3 +17,11 @@ resource "rancher2_bootstrap" "admin" {
   telemetry = false
   ui_default_landing = "ember"
 }
+
+output "rancher_username" {
+  value = rancher2_bootstrap.admin.user
+}
+
+output "rancher_token" {
+  value = rancher2_bootstrap.admin.token
+}

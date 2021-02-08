@@ -1,9 +1,16 @@
 ---
 ansible_pwd: "{{ lookup('env', 'PWD') }}"
 keys_dir: "{{ ansible_pwd }}/keys"
+secrets_dir: "{{ ansible_pwd }}/secrets"
 host_vars_dir: "{{ ansible_pwd }}/host_vars"
 
+tf_action: "apply"
+
 workspace: "{{ lookup('env', 'KUBEFACTORY_WORKSPACE') }}"
+
+workspace_host_vars_dir: "{{ host_vars_dir }}/{{ workspace }}"
+workspace_secrets_dir: "{{ workspace_host_vars_dir }}/secrets"
+workspace_terraform_dir: "{{ workspace_host_vars_dir }}/terraform"
 
 gandi_api_key: "{{ lookup('env', 'GANDI_API_KEY') }}"
 gandi_domain: "{{ lookup('env', 'GANDI_DOMAIN') }}"

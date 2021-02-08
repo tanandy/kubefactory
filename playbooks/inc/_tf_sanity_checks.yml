@@ -1,0 +1,28 @@
+---
+- name: Checking workspace
+  assert:
+    that:
+      - workspace is defined
+      - workspace != 'default'
+    msg: >-
+      Variable 'workspace' must be defined and not equal to 'default'
+
+- name: Checking terraform action
+  assert:
+    that:
+      - tf_action is defined
+      - tf_action in ['apply', 'destroy']
+    msg: >-
+      'tf_action' must be defined and one of ['apply', 'destroy']
+
+- name: APPLY - Directories
+  delegate_to: localhost
+  become: no
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ workspace_host_vars_dir }}"
+    - "{{ workspace_secrets_dir }}"
+    - "{{ workspace_terraform_dir }}"
+  when: tf_action == 'apply'

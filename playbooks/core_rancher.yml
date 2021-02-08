@@ -1,6 +1,6 @@
 ---
 - name: Deploy K3S and Rancher
-  hosts: "{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') )}}"
+  hosts: "{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') ) }}"
   become: yes
   gather_facts: yes
   strategy: linear

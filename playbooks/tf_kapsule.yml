@@ -1,28 +1,37 @@
 ---
-- hosts: localhost
+- hosts: "{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') ) }}"
   become: no
   gather_facts: no
   strategy: linear
 
   vars:
-    tf_stack: kapsule
     tf_action: apply
-    tf_stack_dir: "{{ ansible_pwd }}/terraform/{{ tf_stack }}"
+    src_terraform_dir: "{{ (playbook_dir + '/../') | realpath }}/terraform/kapsule"
+    terraform_dir: "{{ workspace_terraform_dir }}/kapsule"
 
   tasks:
-    - name: Sanity checks
-      assert:
-        that:
-          - workspace is defined
-          - workspace != 'default'
-          - tf_action in ['apply', 'destroy']
-        msg: "'workspace' must be defined and not 'default'"
+    - import_tasks: "{{ playbook_dir }}/inc/_tf_sanity_checks.yml"
+
+    - name: Copy terraform sources
+      copy:
+        src: "{{ src_terraform_dir }}"
+        dest: "{{ workspace_terraform_dir }}"
+      when: tf_action == 'apply'
 
     - name: "Apply workspace {{ workspace }} on {{ tf_stack }}"
+      delegate_to: localhost
       terraform:
-        project_path: "{{ tf_stack_dir }}"
+        project_path: "{{ terraform_dir }}"
         state: "{{ (tf_action == 'destroy') | ternary('absent', 'present') }}"
         force_init: true
         workspace: "{{ workspace }}"
       register: tf_apply
+
+    - name: Render kubeconfig file
+      delegate_to: localhost
+      copy:
+        dest: "{{ workspace_secrets_dir }}/kubeconfig.yml"
+        content: |-
+          {{ tf_apply.outputs.kubeconfig_file.value }}
+      when: tf_action == 'apply'
 

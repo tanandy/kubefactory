@@ -88,3 +88,26 @@
         state: present
         key: "{{ lookup('file', item) }}"
       loop: "{{ caretaker_authorized_key_files }}"
+
+- name: 
+  hosts: "{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') )}}"
+  become: yes
+  gather_facts: no
+  strategy: linear
+
+  tasks:
+    - name: Delete raw host vars file
+      delegate_to: localhost
+      become: no
+      file:
+        path: "{{ host_vars_dir }}/raw_{{ workspace }}.yml"
+        state: absent
+
+    - name: Remove raw host from inventory
+      delegate_to: localhost
+      become: no
+      lineinfile:
+        path: "{{ ansible_pwd }}/hosts"
+        state: absent
+        line: >-
+          raw_{{ workspace }}

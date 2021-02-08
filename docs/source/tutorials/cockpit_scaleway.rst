@@ -110,7 +110,7 @@ Run:
         ansible-playbook playbooks/core_init.yml && \
         ansible-playbook playbooks/gandi_delegate_subdomain.yml -e mode=destroy -e force=true && \
         ansible-playbook playbooks/gandi_delegate_subdomain.yml && \
-        ansible-playbook playbooks/core_services.yml && \
+        ansible-playbook playbooks/core_system.yml && \
         ansible-playbook playbooks/acme_rotate_certificates.yml && \
         ansible-playbook playbooks/core_rancher.yml
 
