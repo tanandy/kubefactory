@@ -19,13 +19,69 @@ This tutorial will guide you through:
 Ready?
 ******
 
-* Configure a DNS to delegate a SOA to your server.
+For this tutorial to go as expected you must have:
+
+* An AWS account (AKSK with IAM administator rights)
+* A Scaleway account (AKSK and organization id)
+* A gandi account (API key + domain name)
 
 ******
 Set.
 ******
 
-* Choose the name of your Rancher platform. It must be a valid dns subdomain, as it will be also used for that purpose. In this tutorial we choose 'lab'
+Configure your Gandi account
+==========================================
+
+At the workspace root, create a ``.env.gandi`` file with this content:
+
+.. code:: bash
+
+    export GANDI_API_KEY="..."
+    export GANDI_DOMAIN="..."
+
+Then run:
+
+.. code:: bash
+
+    direnv reload
+    
+.. tip::
+
+    Let's assume that your domain will be ``yourdomain.fr``
+
+Configure your Scaleway account
+==========================================
+
+At the workspace root, create a ``.env.scw`` file with this content:
+
+.. code:: bash
+
+    export SCW_DEFAULT_ORGANIZATION_ID="..."
+    export SCW_ACCESS_KEY="..."
+    export SCW_SECRET_KEY="..."
+    export SCW_DEFAULT_REGION="..."
+    export SCW_DEFAULT_ZONE="..."
+
+Then run:
+
+.. code:: bash
+
+    direnv reload
+
+Choose the name of your Rancher instance
+==========================================
+
+It must be a **valid dns subdomain** (it will be used for that). 
+
+To point to this value, run:
+
+.. code:: bash
+
+    export KUBEFACTORY_WORKSPACE="..."
+
+.. tip::
+
+    Let's assume that your domain will be ``yourlab``
 
 ******
 Go!
@@ -38,7 +94,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/tf_core.yml -e workspace=lab
+    ansible-playbook playbooks/tf_core.yml
 
 
 Expected:
@@ -50,7 +106,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/core_init.yml -e workspace=lab
+    ansible-playbook playbooks/core_init.yml
 
 
 Provision system
@@ -60,7 +116,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/core_services.yml -e workspace=lab
+    ansible-playbook playbooks/core_system.yml
 
 Delegate a subdomain
 ==========================================
@@ -69,7 +125,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/gandi_delegate_subdomain.yml -e workspace=lab
+    ansible-playbook playbooks/gandi_delegate_subdomain.yml
 
 
 
@@ -80,7 +136,7 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/acme_rotate_certificates.yml -e workspace=lab
+    ansible-playbook playbooks/acme_rotate_certificates.yml
 
 Provision Rancher
 ==========================================
@@ -89,14 +145,14 @@ Run:
 
 .. code:: bash
 
-    ansible-playbook playbooks/core_rancher.yml -e workspace=lab
+    ansible-playbook playbooks/core_rancher.yml
 
 ----
 
 .. admonition:: CONGRATULATIONS
     :class: important
 
-    Your cockpit is founded!
+    Your Rancher is setup! You can reach it at `<https://rancher.k3s.yourlab.yourdomain.fr>`_
 
 ----
 
@@ -105,7 +161,7 @@ Run:
 
     .. code:: bash
 
-        export KUBEFACTORY_WORKSPACE=lab && \
+        export KUBEFACTORY_WORKSPACE=yourlab && \
         ansible-playbook playbooks/tf_core.yml && \
         ansible-playbook playbooks/core_init.yml && \
         ansible-playbook playbooks/gandi_delegate_subdomain.yml -e mode=destroy -e force=true && \
