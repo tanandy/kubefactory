@@ -22,70 +22,31 @@ Ready?
 For this tutorial to go as expected you must have:
 
 * An AWS account (AKSK with IAM administator rights)
-* A Scaleway account (AKSK and organization id)
-* A gandi account (API key + domain name)
+* Follow the :doc:`/howto/conf_scw` how-to guide
+* Follow the :doc:`/howto/conf_gandi` how-to guide
+* Choose your Rancher instance name. It must be a **valid dns subdomain**. 
 
 ******
 Set.
 ******
 
-Configure your Gandi account
-==========================================
+For this tutorial, let's assume that:
 
-At the workspace root, create a ``.env.gandi`` file with this content:
-
-.. code:: bash
-
-    export GANDI_API_KEY="..."
-    export GANDI_DOMAIN="..."
-
-Then run:
-
-.. code:: bash
-
-    direnv reload
-    
-.. tip::
-
-    Let's assume that your domain will be ``yourdomain.fr``
-
-Configure your Scaleway account
-==========================================
-
-At the workspace root, create a ``.env.scw`` file with this content:
-
-.. code:: bash
-
-    export SCW_DEFAULT_ORGANIZATION_ID="..."
-    export SCW_ACCESS_KEY="..."
-    export SCW_SECRET_KEY="..."
-    export SCW_DEFAULT_REGION="..."
-    export SCW_DEFAULT_ZONE="..."
-
-Then run:
-
-.. code:: bash
-
-    direnv reload
-
-Choose the name of your Rancher instance
-==========================================
-
-It must be a **valid dns subdomain** (it will be used for that). 
-
-To point to this value, run:
-
-.. code:: bash
-
-    export KUBEFACTORY_WORKSPACE="..."
-
-.. tip::
-
-    Let's assume that your domain will be ``yourlab``
+* your domain is ``yourdomain.fr``
+* your Rancher instance is ``yourlab``
 
 ******
 Go!
 ******
+
+Setup the Rancher instance name
+==========================================
+
+Run:
+
+.. code:: bash
+
+    export KUBEFACTORY_WORKSPACE="yourlab"
 
 Create a Scaleway instance
 ==========================================
@@ -95,7 +56,6 @@ Run:
 .. code:: bash
 
     ansible-playbook playbooks/tf_core.yml
-
 
 Expected:
 
@@ -170,3 +130,11 @@ Run:
         ansible-playbook playbooks/acme_rotate_certificates.yml && \
         ansible-playbook playbooks/core_rancher.yml
 
+.. admonition:: HEADSHOT SCRIPT - DESTROY
+    :class: danger
+
+    .. code:: bash
+
+        export KUBEFACTORY_WORKSPACE=yourlab && \
+        ansible-playbook playbooks/gandi_delegate_subdomain.yml -e mode=destroy -e force=true && \
+        ansible-playbook playbooks/tf_core.yml -e tf_action=destroy
