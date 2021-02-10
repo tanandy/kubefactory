@@ -6,8 +6,8 @@
 
   vars:
     tf_action: apply
-    src_terraform_dir: "{{ (playbook_dir + '/../') | realpath }}/terraform/kapsule"
-    terraform_dir: "{{ workspace_terraform_dir }}/kapsule"
+    src_terraform_dir: "{{ (playbook_dir + '/../') | realpath }}/terraform/rancher_cluster_import"
+    terraform_dir: "{{ workspace_terraform_dir }}/rancher_cluster_import"
 
   tasks:
     - import_tasks: "{{ playbook_dir }}/inc/_tf_sanity_checks.yml"
@@ -28,19 +28,30 @@
         dest: "{{ workspace_terraform_dir }}"
       when: tf_action == 'apply'
 
-    - name: "Apply workspace {{ workspace }} on {{ tf_stack }}"
+    - name: Terraform DO
       delegate_to: localhost
       terraform:
         project_path: "{{ terraform_dir }}"
         state: "{{ (tf_action == 'destroy') | ternary('absent', 'present') }}"
         force_init: true
         workspace: "{{ workspace }}_{{ kapsule_name }}"
+        variables:
+          cluster_name: "{{ workspace }}-{{ kapsule_name }}"
       register: tf_apply
+      environment:
+        RANCHER_URL: "{{ rancher_url }}"
+        RANCHER_TOKEN_KEY: "{{ rancher_token }}"
 
-    - name: Render kubeconfig file
+    - get_url:
+        url: "{{ tf_apply.outputs.registration_manifest_url.value }}"
+        dest: "{{ workspace_secrets_dir }}/{{ kapsule_name }}.register.yml"
       delegate_to: localhost
-      copy:
-        dest: "{{ workspace_secrets_dir }}/{{ kapsule_name }}.kubeconfig.yml"
-        content: |-
-          {{ tf_apply.outputs.kubeconfig_file.value }}
       when: tf_action == 'apply'
+
+    - name: Launch cluster self-registration
+      delegate_to: localhost
+      community.kubernetes.k8s:
+        kubeconfig: "{{ workspace_secrets_dir }}/{{ kapsule_name }}.kubeconfig.yml"
+        src: "{{ workspace_secrets_dir }}/{{ kapsule_name }}.register"
+      when: tf_action == 'apply'
+    

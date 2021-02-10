@@ -39,5 +39,6 @@
         dest: "{{ workspace_host_vars_dir }}/tf_rancher_bootstrap.yml"
         content: |-
           ---
+          rancher_url: "{{ tf_apply.outputs.rancher_url.value }}"
           rancher_username: "{{ tf_apply.outputs.rancher_username.value }}"
           rancher_token: "{{ tf_apply.outputs.rancher_token.value }}"

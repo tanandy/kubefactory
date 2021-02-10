@@ -10,7 +10,7 @@ It is based on Terraform for:
 * bootstraping Rancher
 * configuring Rancher and creating Kubernetes cluster to manage.
 
-Don't know where to start? See :doc:`/howto/getting_started`.
+Don't know where to start? See how to :doc:`/howto/getting_started`.
 
 .. toctree::
    :maxdepth: 1
@@ -28,7 +28,8 @@ Indices and tables
 * :ref:`search`
 
 Credits
-=======
+==================
 
 * Documentation structure by Daniele Procida. `Learn more... <https://documentation.divio.com/>`_
 * Project logo by `Freepik <https://www.freepik.com>`_ from `Flaticon <https://www.flaticon.com/>`_.
+* `Fleet examples <https://github.com/wjimenez5271/fleet-examples>`_ by William Jimenez.
