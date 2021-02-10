@@ -2,26 +2,21 @@
 Install Rancher on a Scaleway instance
 ##########################################
 
-Be sure to read the :doc:`/howto/getting_started`
-
 This tutorial will guide you through:
 
-* Deploy a server on Scaleway Public Cloud
-* Delegate a dns subdomain authority to it
-* Install K3S and Rancher
+* Creating a server on Scaleway Elements
+* Delegating a (Gandi-managed) dns subdomain authority to it
+* Installing K3S and Rancher
 
-.. note::
-
-    This is no marketing bullshit intending to push you into renting a Scaleway server.
-    I (the writer) find it fine for demonstration and learning. Feel free to adapt it to your needs/will.
+Estimated 
 
 ******
 Ready?
 ******
 
-For this tutorial to go as expected you must have:
+For this tutorial to go as expected you **must**:
 
-* An AWS account (AKSK with IAM administator rights)
+* Follow the :doc:`/howto/getting_started` how-to guide
 * Follow the :doc:`/howto/conf_scw` how-to guide
 * Follow the :doc:`/howto/conf_gandi` how-to guide
 * Choose your Rancher instance name. It must be a **valid dns subdomain**. 
@@ -42,14 +37,20 @@ Go!
 Setup the Rancher instance name
 ==========================================
 
+Most of the playbooks hosts scope is based on the ``'workspace'`` ansible variable.
+This variable take its default value from environment variable ``KUBEFACTORY_WORKSPACE``.
+
+This value will be used as a DNS subdomain delegated to the Scaleway instance we will create.
+
 Run:
 
 .. code:: bash
 
     export KUBEFACTORY_WORKSPACE="yourlab"
 
-Create a Scaleway instance
+Create instance
 ==========================================
+
 
 Run:
 
@@ -128,7 +129,8 @@ Run:
         ansible-playbook playbooks/gandi_delegate_subdomain.yml && \
         ansible-playbook playbooks/core_system.yml && \
         ansible-playbook playbooks/acme_rotate_certificates.yml && \
-        ansible-playbook playbooks/core_rancher.yml
+        ansible-playbook playbooks/core_rancher.yml && \
+        ansible-playbook playbooks/tf_rancher_bootstrap.yml
 
 .. admonition:: HEADSHOT SCRIPT - DESTROY
     :class: danger

@@ -44,7 +44,7 @@
 
     - get_url:
         url: "{{ tf_apply.outputs.registration_manifest_url.value }}"
-        dest: "{{ workspace_secrets_dir }}/{{ kapsule_name }}.register.yml"
+        dest: "{{ workspace_secrets_dir }}/{{ kapsule_name }}.register"
       delegate_to: localhost
       when: tf_action == 'apply'
 
