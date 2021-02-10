@@ -17,6 +17,15 @@
         path: "{{ terraform_dir }}"
         state: directory
       
+    - name: Clean terraform directory
+      delegate_to: localhost
+      file: 
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ terraform_dir }}/.terraform"
+        - "{{ terraform_dir }}/.terraform.tfstate.d"
+        - "{{ terraform_dir }}/.terraform.lock.hcl"
 
     - name: Render terraform code - rancher bootstrap
       delegate_to: localhost
