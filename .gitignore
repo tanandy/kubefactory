@@ -41,3 +41,4 @@ galaxy.yml
 build/clone
 ansible_collections
 .terraform.lock.hcl
+secretPad.txt
