@@ -1,0 +1,2017 @@
+additionalPrometheusRules: null
+alertmanager:
+  alertmanagerSpec:
+    additionalPeers: null
+    affinity: {}
+    configMaps: null
+    containers: null
+    externalUrl: null
+    image:
+      repository: rancher/prom-alertmanager
+      sha: ''
+      tag: v0.21.0
+    listenLocal: false
+    logFormat: logfmt
+    logLevel: info
+    nodeSelector: {}
+    paused: false
+    podAntiAffinity: ''
+    podAntiAffinityTopologyKey: kubernetes.io/hostname
+    podMetadata: {}
+    portName: web
+    priorityClassName: ''
+    replicas: 1
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    retention: 120h
+    routePrefix: /
+    secrets: null
+    securityContext:
+      fsGroup: 2000
+      runAsGroup: 2000
+      runAsNonRoot: true
+      runAsUser: 1000
+    storage: {}
+    tolerations: null
+    useExistingSecret: false
+  apiVersion: v2
+  config:
+    global:
+      resolve_timeout: 5m
+    receivers:
+      - name: 'null'
+    route:
+      group_by:
+        - job
+      group_interval: 5m
+      group_wait: 30s
+      receiver: 'null'
+      repeat_interval: 12h
+      routes:
+        - match:
+            alertname: Watchdog
+          receiver: 'null'
+    templates:
+      - /etc/alertmanager/config/*.tmpl
+  enabled: true
+  ingress:
+    annotations: {}
+    enabled: false
+    hosts: null
+    labels: {}
+    paths: null
+    tls: null
+  ingressPerReplica:
+    annotations: {}
+    enabled: false
+    hostDomain: ''
+    hostPrefix: ''
+    labels: {}
+    paths: null
+    tlsSecretName: ''
+    tlsSecretPerReplica:
+      enabled: false
+      prefix: alertmanager
+  podDisruptionBudget:
+    enabled: false
+    maxUnavailable: ''
+    minAvailable: 1
+  secret:
+    annotations: {}
+    cleanupOnUninstall: false
+    image:
+      pullPolicy: IfNotPresent
+      repository: rancher/rancher-agent
+      tag: v2.4.8
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+  service:
+    annotations: {}
+    clusterIP: ''
+    externalIPs: null
+    labels: {}
+    loadBalancerIP: ''
+    loadBalancerSourceRanges: null
+    nodePort: 30903
+    port: 9093
+    targetPort: 9093
+    type: ClusterIP
+  serviceAccount:
+    annotations: {}
+    create: true
+    name: ''
+  serviceMonitor:
+    interval: ''
+    metricRelabelings: null
+    relabelings: null
+    selfMonitor: true
+  servicePerReplica:
+    annotations: {}
+    enabled: false
+    loadBalancerSourceRanges: null
+    nodePort: 30904
+    port: 9093
+    targetPort: 9093
+    type: ClusterIP
+  templateFiles:
+    rancher_defaults.tmpl: >-
+      {{- define "slack.rancher.text" -}}
+
+      {{ template "rancher.text_multiple" . }}
+
+      {{- end -}}
+
+
+      {{- define "rancher.text_multiple" -}}
+
+      *[GROUP - Details]*
+
+      One or more alarms in this group have triggered a notification.
+
+
+      {{- if gt (len .GroupLabels.Values) 0 }}
+
+      *Group Labels:*
+        {{- range .GroupLabels.SortedPairs }}
+        • *{{ .Name }}:* `{{ .Value }}`
+        {{- end }}
+      {{- end }}
+
+      {{- if .ExternalURL }}
+
+      *Link to AlertManager:* {{ .ExternalURL }}
+
+      {{- end }}
+
+
+      {{- range .Alerts }}
+
+      {{ template "rancher.text_single" . }}
+
+      {{- end }}
+
+      {{- end -}}
+
+
+      {{- define "rancher.text_single" -}}
+
+      {{- if .Labels.alertname }}
+
+      *[ALERT - {{ .Labels.alertname }}]*
+
+      {{- else }}
+
+      *[ALERT]*
+
+      {{- end }}
+
+      {{- if .Labels.severity }}
+
+      *Severity:* `{{ .Labels.severity }}`
+
+      {{- end }}
+
+      {{- if .Labels.cluster }}
+
+      *Cluster:*  {{ .Labels.cluster }}
+
+      {{- end }}
+
+      {{- if .Annotations.summary }}
+
+      *Summary:* {{ .Annotations.summary }}
+
+      {{- end }}
+
+      {{- if .Annotations.message }}
+
+      *Message:* {{ .Annotations.message }}
+
+      {{- end }}
+
+      {{- if .Annotations.description }}
+
+      *Description:* {{ .Annotations.description }}
+
+      {{- end }}
+
+      {{- if .Annotations.runbook_url }}
+
+      *Runbook URL:* <{{ .Annotations.runbook_url }}|:spiral_note_pad:>
+
+      {{- end }}
+
+      {{- with .Labels }}
+
+      {{- with .Remove (stringSlice "alertname" "severity" "cluster") }}
+
+      {{- if gt (len .) 0 }}
+
+      *Additional Labels:*
+        {{- range .SortedPairs }}
+        • *{{ .Name }}:* `{{ .Value }}`
+        {{- end }}
+      {{- end }}
+
+      {{- end }}
+
+      {{- end }}
+
+      {{- with .Annotations }}
+
+      {{- with .Remove (stringSlice "summary" "message" "description"
+      "runbook_url") }}
+
+      {{- if gt (len .) 0 }}
+
+      *Additional Annotations:*
+        {{- range .SortedPairs }}
+        • *{{ .Name }}:* `{{ .Value }}`
+        {{- end }}
+      {{- end }}
+
+      {{- end }}
+
+      {{- end }}
+
+      {{- end -}}
+  tplConfig: false
+commonLabels: {}
+coreDns:
+  enabled: true
+  service:
+    port: 9153
+    targetPort: 9153
+  serviceMonitor:
+    interval: ''
+    metricRelabelings: null
+    relabelings: null
+defaultRules:
+  annotations: {}
+  appNamespacesTarget: .*
+  create: true
+  labels: {}
+  rules:
+    alertmanager: true
+    etcd: true
+    general: true
+    k8s: true
+    kubeApiserver: true
+    kubeApiserverAvailability: true
+    kubeApiserverError: true
+    kubeApiserverSlos: true
+    kubePrometheusGeneral: true
+    kubePrometheusNodeAlerting: true
+    kubePrometheusNodeRecording: true
+    kubeScheduler: true
+    kubeStateMetrics: true
+    kubelet: true
+    kubernetesAbsent: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    network: true
+    node: true
+    prometheus: true
+    prometheusOperator: true
+    time: true
+  runbookUrl: >-
+    https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#
+fullnameOverride: ''
+global:
+  cattle:
+    systemDefaultRegistry: ''
+    clusterId: c-c2pxc
+    clusterName: challenge-alpha
+  imagePullSecrets: null
+  kubectl:
+    pullPolicy: IfNotPresent
+    repository: rancher/kubectl
+    tag: v1.18.6
+  rbac:
+    create: true
+    pspAnnotations: {}
+    pspEnabled: true
+    userRoles:
+      aggregateToDefaultRoles: true
+      create: true
+  systemDefaultRegistry: ''
+grafana:
+  additionalDataSources: null
+  admin:
+    existingSecret: ''
+    passwordKey: admin-password
+    userKey: admin-user
+  adminPassword: prom-operator
+  adminUser: admin
+  affinity: {}
+  dashboardProviders: {}
+  dashboards: {}
+  dashboardsConfigMaps: {}
+  datasources: {}
+  defaultDashboardsEnabled: true
+  deploymentStrategy:
+    type: Recreate
+  downloadDashboards:
+    env: {}
+    resources: {}
+  downloadDashboardsImage:
+    pullPolicy: IfNotPresent
+    repository: rancher/curlimages-curl
+    sha: ''
+    tag: 7.70.0
+  enabled: true
+  env: {}
+  envFromSecret: ''
+  envRenderSecret: {}
+  envValueFrom: {}
+  extraConfigmapMounts: null
+  extraContainerVolumes:
+    - emptyDir: {}
+      name: nginx-home
+    - configMap:
+        items:
+          - key: nginx.conf
+            mode: 438
+            path: nginx.conf
+        name: grafana-nginx-proxy-config
+      name: grafana-nginx
+  extraContainers: |
+    - name: grafana-proxy
+      args:
+      - nginx
+      - -g
+      - daemon off;
+      - -c
+      - /nginx/nginx.conf
+      image: "{{ template "system_default_registry" . }}{{ .Values.proxy.image.repository }}:{{ .Values.proxy.image.tag }}"
+      ports:
+      - containerPort: 8080
+        name: nginx-http
+        protocol: TCP
+      volumeMounts:
+      - mountPath: /nginx
+        name: grafana-nginx
+      - mountPath: /var/cache/nginx
+        name: nginx-home
+      securityContext:
+        runAsUser: 101
+        runAsGroup: 101
+  extraEmptyDirMounts: null
+  extraExposePorts: null
+  extraInitContainers: null
+  extraSecretMounts: null
+  extraVolumeMounts: null
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  grafana.ini:
+    analytics:
+      check_for_updates: true
+    auth:
+      disable_login_form: false
+    auth.anonymous:
+      enabled: true
+      org_role: Viewer
+    auth.basic:
+      enabled: false
+    dashboards:
+      default_home_dashboard_path: /tmp/dashboards/rancher-default-home.json
+    grafana_net:
+      url: 'https://grafana.net'
+    log:
+      mode: console
+    paths:
+      data: /var/lib/grafana/data
+      logs: /var/log/grafana
+      plugins: /var/lib/grafana/plugins
+      provisioning: /etc/grafana/provisioning
+    users:
+      auto_assign_org_role: Viewer
+  hostAliases: null
+  image:
+    pullPolicy: IfNotPresent
+    repository: rancher/grafana-grafana
+    sha: ''
+    tag: 7.1.5
+  ingress:
+    annotations: {}
+    enabled: false
+    extraPaths: null
+    hosts: null
+    labels: {}
+    path: /
+    tls: null
+  initChownData:
+    enabled: true
+    image:
+      pullPolicy: IfNotPresent
+      repository: rancher/library-busybox
+      sha: ''
+      tag: 1.31.1
+    resources: {}
+  ldap:
+    config: ''
+    enabled: false
+    existingSecret: ''
+  livenessProbe:
+    failureThreshold: 10
+    httpGet:
+      path: /api/health
+      port: 3000
+    initialDelaySeconds: 60
+    timeoutSeconds: 30
+  namespaceOverride: ''
+  nodeSelector: {}
+  notifiers: {}
+  persistence:
+    accessModes:
+      - ReadWriteOnce
+    enabled: false
+    finalizers:
+      - kubernetes.io/pvc-protection
+    size: 10Gi
+    type: pvc
+  plugins: null
+  podDisruptionBudget: {}
+  podPortName: grafana
+  proxy:
+    image:
+      repository: rancher/library-nginx
+      tag: 1.19.2-alpine
+  rbac:
+    create: true
+    extraClusterRoleRules: null
+    extraRoleRules: null
+    namespaced: false
+    pspAnnotations: {}
+    pspEnabled: true
+  readinessProbe:
+    httpGet:
+      path: /api/health
+      port: 3000
+  replicas: 1
+  resources:
+    limits:
+      cpu: 200m
+      memory: 200Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  securityContext:
+    fsGroup: 472
+    runAsGroup: 472
+    runAsNonRoot: true
+    runAsUser: 472
+  service:
+    annotations: {}
+    labels: {}
+    nodePort: 30950
+    port: 80
+    portName: nginx-http
+    targetPort: 8080
+    type: ClusterIP
+  serviceAccount:
+    create: true
+  serviceMonitor:
+    enabled: false
+    interval: ''
+    labels: {}
+    metricRelabelings: null
+    path: /metrics
+    relabelings: null
+    scrapeTimeout: 30s
+    selfMonitor: true
+  sidecar:
+    dashboards:
+      SCProvider: true
+      annotations: {}
+      defaultFolderName: null
+      enabled: true
+      folder: /tmp/dashboards
+      label: grafana_dashboard
+      provider:
+        allowUiUpdates: false
+        disableDelete: false
+        folder: ''
+        name: sidecarProvider
+        orgid: 1
+        type: file
+      searchNamespace: cattle-dashboards
+    datasources:
+      annotations: {}
+      createPrometheusReplicasDatasources: false
+      defaultDatasourceEnabled: true
+      enabled: true
+      label: grafana_datasource
+      searchNamespace: null
+    enableUniqueFilenames: false
+    image:
+      repository: rancher/kiwigrid-k8s-sidecar
+      sha: ''
+      tag: 0.1.151
+    imagePullPolicy: IfNotPresent
+    notifiers:
+      enabled: false
+      label: grafana_notifier
+    resources: {}
+  smtp:
+    existingSecret: ''
+    passwordKey: password
+    userKey: user
+  testFramework:
+    enabled: true
+    image: rancher/bats-bats
+    imagePullPolicy: IfNotPresent
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+    tag: v1.1.0
+  tolerations: null
+k3sServer:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: false
+      insecureSkipVerify: false
+      keyFile: ''
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector: {}
+    port: 10013
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: true
+  component: k3s-server
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 10249
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+kube-state-metrics:
+  affinity: {}
+  autosharding:
+    enabled: false
+  collectors:
+    certificatesigningrequests: true
+    configmaps: true
+    cronjobs: true
+    daemonsets: true
+    deployments: true
+    endpoints: true
+    horizontalpodautoscalers: true
+    ingresses: true
+    jobs: true
+    limitranges: true
+    mutatingwebhookconfigurations: true
+    namespaces: true
+    networkpolicies: true
+    nodes: true
+    persistentvolumeclaims: true
+    persistentvolumes: true
+    poddisruptionbudgets: true
+    pods: true
+    replicasets: true
+    replicationcontrollers: true
+    resourcequotas: true
+    secrets: true
+    services: true
+    statefulsets: true
+    storageclasses: true
+    validatingwebhookconfigurations: true
+    verticalpodautoscalers: false
+    volumeattachments: true
+  customLabels: {}
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  hostNetwork: false
+  image:
+    pullPolicy: IfNotPresent
+    repository: rancher/coreos-kube-state-metrics
+    tag: v1.9.7
+  imagePullSecrets: null
+  kubeTargetVersionOverride: ''
+  namespaceOverride: ''
+  nodeSelector: {}
+  podAnnotations: {}
+  podDisruptionBudget: {}
+  podSecurityPolicy:
+    additionalVolumes: null
+    annotations: {}
+    enabled: true
+  prometheus:
+    monitor:
+      additionalLabels: {}
+      enabled: false
+      honorLabels: false
+      namespace: ''
+  prometheusScrape: true
+  rbac:
+    create: true
+  replicas: 1
+  resources:
+    limits:
+      cpu: 100m
+      memory: 200Mi
+    requests:
+      cpu: 100m
+      memory: 130Mi
+  securityContext:
+    enabled: true
+    fsGroup: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+  service:
+    annotations: {}
+    loadBalancerIP: ''
+    nodePort: 0
+    port: 8080
+    type: ClusterIP
+  serviceAccount:
+    annotations: {}
+    create: true
+    imagePullSecrets: null
+  tolerations: null
+kubeAdmControllerManager:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: true
+      insecureSkipVerify: true
+      keyFile: ''
+      useServiceAccountCredentials: true
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector:
+      node-role.kubernetes.io/master: ''
+    port: 10011
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: true
+  component: kube-controller-manager
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 10257
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+kubeAdmEtcd:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: false
+      insecureSkipVerify: false
+      keyFile: ''
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector:
+      node-role.kubernetes.io/master: ''
+    port: 10014
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: true
+  component: kube-etcd
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 2381
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+kubeAdmProxy:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: false
+      insecureSkipVerify: false
+      keyFile: ''
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector: {}
+    port: 10013
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: true
+  component: kube-proxy
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 10249
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+kubeAdmScheduler:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: true
+      insecureSkipVerify: true
+      keyFile: ''
+      useServiceAccountCredentials: true
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector:
+      node-role.kubernetes.io/master: ''
+    port: 10012
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: true
+  component: kube-scheduler
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 10259
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+kubeApiServer:
+  enabled: true
+  relabelings: null
+  serviceMonitor:
+    interval: ''
+    jobLabel: component
+    metricRelabelings: null
+    selector:
+      matchLabels:
+        component: apiserver
+        provider: kubernetes
+  tlsConfig:
+    insecureSkipVerify: false
+    serverName: kubernetes
+kubeControllerManager:
+  enabled: false
+  endpoints: null
+  service:
+    port: 10252
+    targetPort: 10252
+  serviceMonitor:
+    https: false
+    insecureSkipVerify: null
+    interval: ''
+    metricRelabelings: null
+    relabelings: null
+    serverName: null
+kubeDns:
+  enabled: false
+  service:
+    dnsmasq:
+      port: 10054
+      targetPort: 10054
+    skydns:
+      port: 10055
+      targetPort: 10055
+  serviceMonitor:
+    dnsmasqMetricRelabelings: null
+    dnsmasqRelabelings: null
+    interval: ''
+    metricRelabelings: null
+    relabelings: null
+kubeEtcd:
+  enabled: false
+  endpoints: null
+  service:
+    port: 2379
+    targetPort: 2379
+  serviceMonitor:
+    caFile: ''
+    certFile: ''
+    insecureSkipVerify: false
+    interval: ''
+    keyFile: ''
+    metricRelabelings: null
+    relabelings: null
+    scheme: http
+    serverName: ''
+kubeProxy:
+  enabled: false
+  endpoints: null
+  service:
+    port: 10249
+    targetPort: 10249
+  serviceMonitor:
+    https: false
+    interval: ''
+    metricRelabelings: null
+    relabelings: null
+kubeScheduler:
+  enabled: false
+  endpoints: null
+  service:
+    port: 10251
+    targetPort: 10251
+  serviceMonitor:
+    https: false
+    insecureSkipVerify: null
+    interval: ''
+    metricRelabelings: null
+    relabelings: null
+    serverName: null
+kubeStateMetrics:
+  enabled: true
+  serviceMonitor:
+    interval: ''
+    metricRelabelings: null
+    relabelings: null
+kubeTargetVersionOverride: ''
+kubelet:
+  enabled: true
+  namespace: kube-system
+  serviceMonitor:
+    cAdvisor: true
+    cAdvisorMetricRelabelings: null
+    cAdvisorRelabelings:
+      - sourceLabels:
+          - __metrics_path__
+        targetLabel: metrics_path
+    https: true
+    interval: ''
+    metricRelabelings: null
+    probes: true
+    probesMetricRelabelings: null
+    probesRelabelings:
+      - sourceLabels:
+          - __metrics_path__
+        targetLabel: metrics_path
+    relabelings:
+      - sourceLabels:
+          - __metrics_path__
+        targetLabel: metrics_path
+    resource: true
+    resourcePath: /metrics/resource/v1alpha1
+    resourceRelabelings:
+      - sourceLabels:
+          - __metrics_path__
+        targetLabel: metrics_path
+nameOverride: rancher-monitoring
+namespaceOverride: cattle-monitoring-system
+nodeExporter:
+  enabled: true
+  jobLabel: jobLabel
+  serviceMonitor:
+    interval: ''
+    metricRelabelings: null
+    relabelings: null
+    scrapeTimeout: ''
+prometheus:
+  additionalPodMonitors: null
+  additionalServiceMonitors: null
+  annotations: {}
+  enabled: true
+  ingress:
+    annotations: {}
+    enabled: false
+    hosts: null
+    labels: {}
+    paths: null
+    tls: null
+  ingressPerReplica:
+    annotations: {}
+    enabled: false
+    hostDomain: ''
+    hostPrefix: ''
+    labels: {}
+    paths: null
+    tlsSecretName: ''
+    tlsSecretPerReplica:
+      enabled: false
+      prefix: prometheus
+  podDisruptionBudget:
+    enabled: false
+    maxUnavailable: ''
+    minAvailable: 1
+  podSecurityPolicy:
+    allowedCapabilities: null
+  prometheusSpec:
+    additionalAlertManagerConfigs: null
+    additionalAlertRelabelConfigs: null
+    additionalPrometheusSecretsAnnotations: {}
+    additionalScrapeConfigs: null
+    additionalScrapeConfigsSecret: {}
+    affinity: {}
+    alertingEndpoints: null
+    apiserverConfig: {}
+    configMaps: null
+    containers: |
+      - name: prometheus-proxy
+        args:
+        - nginx
+        - -g
+        - daemon off;
+        - -c
+        - /nginx/nginx.conf
+        image: "{{ template "system_default_registry" . }}{{ .Values.prometheus.prometheusSpec.proxy.image.repository }}:{{ .Values.prometheus.prometheusSpec.proxy.image.tag }}"
+        ports:
+        - containerPort: 8080
+          name: nginx-http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /nginx
+          name: prometheus-nginx
+        - mountPath: /var/cache/nginx
+          name: nginx-home
+        securityContext:
+          runAsUser: 101
+          runAsGroup: 101
+    disableCompaction: false
+    enableAdminAPI: false
+    evaluationInterval: 1m
+    externalLabels: {}
+    externalUrl: ''
+    ignoreNamespaceSelectors: false
+    image:
+      repository: rancher/prom-prometheus
+      sha: ''
+      tag: v2.18.2
+    initContainers: null
+    listenLocal: false
+    logFormat: logfmt
+    logLevel: info
+    nodeSelector: {}
+    paused: false
+    podAntiAffinity: ''
+    podAntiAffinityTopologyKey: kubernetes.io/hostname
+    podMetadata: {}
+    podMonitorNamespaceSelector: {}
+    podMonitorSelector: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    portName: nginx-http
+    priorityClassName: ''
+    prometheusExternalLabelName: ''
+    prometheusExternalLabelNameClear: false
+    proxy:
+      image:
+        repository: rancher/library-nginx
+        tag: 1.19.2-alpine
+    query: {}
+    remoteRead: null
+    remoteWrite: null
+    remoteWriteDashboards: false
+    replicaExternalLabelName: ''
+    replicaExternalLabelNameClear: false
+    replicas: 1
+    resources:
+      limits:
+        cpu: 750m
+        memory: 1000Mi
+      requests:
+        cpu: 250m
+        memory: 500Mi
+    retention: 5d
+    retentionSize: 25GiB
+    routePrefix: /
+    ruleNamespaceSelector: {}
+    ruleSelector: {}
+    ruleSelectorNilUsesHelmValues: false
+    scrapeInterval: 1m
+    secrets: null
+    securityContext:
+      fsGroup: 2000
+      runAsGroup: 2000
+      runAsNonRoot: true
+      runAsUser: 1000
+    serviceMonitorNamespaceSelector: {}
+    serviceMonitorSelector: {}
+    serviceMonitorSelectorNilUsesHelmValues: false
+    storageSpec: {}
+    thanos: {}
+    tolerations: null
+    volumeMounts: null
+    volumes:
+      - emptyDir: {}
+        name: nginx-home
+      - configMap:
+          defaultMode: 438
+          name: prometheus-nginx-proxy-config
+        name: prometheus-nginx
+    walCompression: false
+  service:
+    annotations: {}
+    clusterIP: ''
+    externalIPs: null
+    labels: {}
+    loadBalancerIP: ''
+    loadBalancerSourceRanges: null
+    nodePort: 30090
+    port: 9090
+    sessionAffinity: ''
+    targetPort: 8080
+    type: ClusterIP
+  serviceAccount:
+    create: true
+    name: ''
+  serviceMonitor:
+    bearerTokenFile: null
+    interval: ''
+    metricRelabelings: null
+    relabelings: null
+    scheme: ''
+    selfMonitor: true
+    tlsConfig: {}
+  servicePerReplica:
+    annotations: {}
+    enabled: false
+    loadBalancerSourceRanges: null
+    nodePort: 30091
+    port: 9090
+    targetPort: 9090
+    type: ClusterIP
+  thanosIngress:
+    annotations: {}
+    enabled: false
+    hosts: null
+    labels: {}
+    paths: null
+    servicePort: 10901
+    tls: null
+prometheus-adapter:
+  affinity: {}
+  enabled: true
+  extraVolumeMounts: null
+  extraVolumes: null
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  hostNetwork:
+    enabled: false
+  image:
+    pullPolicy: IfNotPresent
+    pullSecrets: {}
+    repository: rancher/directxman12-k8s-prometheus-adapter-amd64
+    tag: v0.7.0
+  listenPort: 6443
+  logLevel: 4
+  metricsRelistInterval: 1m
+  nodeSelector: {}
+  podAnnotations: {}
+  podDisruptionBudget:
+    enabled: false
+    maxUnavailable: 1
+  podLabels: {}
+  priorityClassName: ''
+  prometheus:
+    path: ''
+    port: 9090
+    url: 'http://rancher-monitoring-prometheus.cattle-monitoring-system.svc'
+  psp:
+    create: true
+  rbac:
+    create: true
+  replicas: 1
+  resources: {}
+  rules:
+    custom: null
+    default: true
+    external: null
+    resource: {}
+  service:
+    annotations: {}
+    port: 443
+    type: ClusterIP
+  serviceAccount:
+    create: true
+  tls:
+    ca: '# Public CA file that signed the APIService'
+    certificate: '# Public key of the APIService'
+    enable: false
+    key: '# Private key of the APIService'
+  tolerations: null
+prometheus-node-exporter:
+  affinity: {}
+  configmaps: null
+  endpoints: null
+  extraArgs:
+    - >-
+      --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
+    - >-
+      --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
+  extraHostVolumeMounts: null
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  hostNetwork: true
+  image:
+    pullPolicy: IfNotPresent
+    repository: rancher/prom-node-exporter
+    tag: v1.0.1
+  namespaceOverride: ''
+  nodeSelector: {}
+  podAnnotations: {}
+  podLabels:
+    jobLabel: node-exporter
+  prometheus:
+    monitor:
+      additionalLabels: {}
+      enabled: false
+      namespace: ''
+      relabelings: null
+      scrapeTimeout: 10s
+  rbac:
+    create: true
+    pspEnabled: true
+  resources:
+    limits:
+      cpu: 200m
+      memory: 50Mi
+    requests:
+      cpu: 100m
+      memory: 30Mi
+  securityContext:
+    fsGroup: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+  service:
+    annotations:
+      prometheus.io/scrape: 'true'
+    listenOnAllInterfaces: true
+    nodePort: null
+    port: 9796
+    targetPort: 9796
+    type: ClusterIP
+  serviceAccount:
+    create: true
+    imagePullSecrets: null
+  sidecarVolumeMount: null
+  sidecars: null
+  tolerations:
+    - effect: NoSchedule
+      operator: Exists
+    - effect: NoExecute
+      operator: Exists
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+prometheusOperator:
+  admissionWebhooks:
+    enabled: true
+    failurePolicy: Fail
+    patch:
+      affinity: {}
+      enabled: true
+      image:
+        pullPolicy: IfNotPresent
+        repository: rancher/jettech-kube-webhook-certgen
+        sha: ''
+        tag: v1.2.1
+      nodeSelector: {}
+      podAnnotations: {}
+      priorityClassName: ''
+      resources: {}
+      tolerations: null
+  affinity: {}
+  cleanupCustomResource: false
+  configReloaderCpu: 100m
+  configReloaderMemory: 25Mi
+  configmapReloadImage:
+    repository: rancher/jimmidyson-configmap-reload
+    sha: ''
+    tag: v0.3.0
+  createCustomResource: true
+  denyNamespaces: null
+  enabled: true
+  hostNetwork: false
+  image:
+    pullPolicy: IfNotPresent
+    repository: rancher/coreos-prometheus-operator
+    sha: ''
+    tag: v0.38.1
+  kubeletService:
+    enabled: true
+    namespace: kube-system
+  manageCrds: true
+  namespaces: {}
+  nodeSelector: {}
+  podAnnotations: {}
+  podLabels: {}
+  prometheusConfigReloaderImage:
+    repository: rancher/coreos-prometheus-config-reloader
+    sha: ''
+    tag: v0.38.1
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  secretFieldSelector: ''
+  securityContext:
+    fsGroup: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+  service:
+    additionalPorts: null
+    annotations: {}
+    clusterIP: ''
+    externalIPs: null
+    labels: {}
+    loadBalancerIP: ''
+    loadBalancerSourceRanges: null
+    nodePort: 30080
+    nodePortTls: 30443
+    type: ClusterIP
+  serviceAccount:
+    create: true
+    name: ''
+  serviceMonitor:
+    interval: ''
+    metricRelabelings: null
+    relabelings: null
+    scrapeTimeout: ''
+    selfMonitor: true
+  tlsProxy:
+    enabled: true
+    image:
+      pullPolicy: IfNotPresent
+      repository: rancher/squareup-ghostunnel
+      sha: ''
+      tag: v1.5.2
+    resources: {}
+  tolerations: null
+rke2ControllerManager:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: false
+      insecureSkipVerify: false
+      keyFile: ''
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector:
+      node-role.kubernetes.io/master: 'true'
+    port: 10011
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: true
+  component: kube-controller-manager
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 10252
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+rke2Etcd:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: false
+      insecureSkipVerify: false
+      keyFile: ''
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector:
+      node-role.kubernetes.io/etcd: 'true'
+    port: 10014
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Equal
+    useLocalhost: true
+  component: kube-etcd
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 2381
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+rke2Proxy:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: false
+      insecureSkipVerify: false
+      keyFile: ''
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector: {}
+    port: 10013
+    proxyUrl: ''
+    resources: {}
+    tolerations: null
+    useLocalhost: true
+  component: kube-proxy
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 10249
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+  tolerations:
+    - effect: NoExecute
+      operator: Exists
+    - effect: NoSchedule
+      operator: Exists
+rke2Scheduler:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: false
+      insecureSkipVerify: false
+      keyFile: ''
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector:
+      node-role.kubernetes.io/master: 'true'
+    port: 10012
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: true
+  component: kube-scheduler
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 10251
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+rkeControllerManager:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: false
+      insecureSkipVerify: false
+      keyFile: ''
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector:
+      node-role.kubernetes.io/controlplane: 'true'
+    port: 10011
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: true
+  component: kube-controller-manager
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 10252
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+rkeEtcd:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: kube-ca.pem
+      certDir: /etc/kubernetes/ssl
+      certFile: kube-etcd-*.pem
+      enabled: true
+      insecureSkipVerify: false
+      keyFile: kube-etcd-*-key.pem
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector:
+      node-role.kubernetes.io/etcd: 'true'
+    port: 10014
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: false
+  component: kube-etcd
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 2379
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+rkeProxy:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: false
+      insecureSkipVerify: false
+      keyFile: ''
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector: {}
+    port: 10013
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: true
+  component: kube-proxy
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 10249
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true
+rkeScheduler:
+  clients:
+    command:
+      - pushprox-client
+    copyCertsImage:
+      repository: rancher/library-busybox
+      tag: 1.31.1
+    enabled: true
+    https:
+      caCertFile: ''
+      certDir: ''
+      certFile: ''
+      enabled: false
+      insecureSkipVerify: false
+      keyFile: ''
+      useServiceAccountCredentials: false
+    image:
+      repository: rancher/pushprox-client
+      tag: v0.1.0-rancher1-client
+    nodeSelector:
+      node-role.kubernetes.io/controlplane: 'true'
+    port: 10012
+    proxyUrl: ''
+    resources: {}
+    tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+    useLocalhost: true
+  component: kube-scheduler
+  enabled: false
+  global:
+    cattle:
+      clusterId: c-c2pxc
+      clusterName: challenge-alpha
+      systemDefaultRegistry: ''
+    imagePullSecrets: null
+    kubectl:
+      pullPolicy: IfNotPresent
+      repository: rancher/kubectl
+      tag: v1.18.6
+    rbac:
+      create: true
+      pspAnnotations: {}
+      pspEnabled: true
+      userRoles:
+        aggregateToDefaultRoles: true
+        create: true
+    systemDefaultRegistry: ''
+  metricsPort: 10251
+  proxy:
+    command:
+      - pushprox-proxy
+    enabled: true
+    image:
+      repository: rancher/pushprox-proxy
+      tag: v0.1.0-rancher1-proxy
+    nodeSelector: {}
+    port: 8080
+    resources: {}
+    tolerations: null
+  serviceMonitor:
+    enabled: true

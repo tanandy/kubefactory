@@ -1,0 +1,87 @@
+---
+additionalLoggingSources:
+  aks:
+    enabled: false
+  eks:
+    enabled: false
+  gke:
+    enabled: false
+  k3s:
+    enabled: false
+  rke:
+    enabled: false
+  rke2:
+    enabled: false
+  '':
+    enabled: true
+    fluentbit:
+      mountPath: ''
+createCustomResource: false
+disablePvc: true
+fluentbit:
+  mountPath: ''
+  tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/controlplane
+      value: 'true'
+    - effect: NoExecute
+      key: node-role.kubernetes.io/etcd
+      value: 'true'
+fullnameOverride: ''
+global:
+  cattle:
+    systemDefaultRegistry: ''
+    clusterId: c-c2pxc
+    clusterName: challenge-alpha
+  psp:
+    enabled: true
+  systemDefaultRegistry: ''
+http:
+  port: 8080
+  service:
+    annotations: {}
+    clusterIP: None
+    labels: {}
+    type: ClusterIP
+image:
+  pullPolicy: IfNotPresent
+  repository: rancher/banzaicloud-logging-operator
+  tag: 3.9.0
+imagePullSecrets: null
+images:
+  config_reloader:
+    repository: rancher/jimmidyson-configmap-reload
+    tag: v0.4.0
+  fluentbit:
+    repository: rancher/fluent-fluent-bit
+    tag: 1.6.10
+  fluentbit_debug:
+    repository: rancher/fluent-fluent-bit
+    tag: 1.6.10-debug
+  fluentd:
+    repository: rancher/banzaicloud-fluentd
+    tag: v1.11.5-alpine-9
+monitoring:
+  serviceMonitor:
+    additionalLabels: {}
+    enabled: false
+    metricRelabelings: null
+    relabelings: null
+nameOverride: ''
+namespaceOverride: ''
+nodeSelector:
+  kubernetes.io/os: linux
+podSecurityContext: {}
+priorityClassName: {}
+rbac:
+  enabled: true
+  psp:
+    enabled: false
+replicaCount: 1
+resources: {}
+securityContext: {}
+tolerations:
+  - effect: NoSchedule
+    key: cattle.io/os
+    operator: Equal
+    value: linux

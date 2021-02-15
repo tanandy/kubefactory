@@ -1,0 +1,6 @@
+---
+- name: Init host for management
+  hosts: "raw_{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') )}}"
+  become: yes
+  gather_facts: no
+  strategy: linear

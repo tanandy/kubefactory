@@ -7,7 +7,7 @@ variable k8s_cluster_cni {
 }
 
 variable k8s_pool_size {
-    default = 2
+    default = 3
 }
 
 variable k8s_pool_node_type {

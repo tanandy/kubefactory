@@ -1,0 +1,43 @@
+---
+- hosts: "{{ workspace | default ( lookup('env', 'KUBEFACTORY_WORKSPACE') ) }}"
+  become: no
+  gather_facts: no
+  strategy: linear
+
+  vars:
+    tf_action: apply
+    src_terraform_dir: "{{ (playbook_dir + '/../') | realpath }}/terraform/rancher_cluster_tooling"
+    terraform_dir: "{{ workspace_terraform_dir }}/rancher_cluster_tooling"
+
+  tasks:
+    - import_tasks: "{{ playbook_dir }}/inc/_tf_sanity_checks.yml"
+
+    - name: Checking kapsule name
+      assert:
+        that:
+          - kapsule_name is defined
+          - (kapsule_name | length) > 0
+          - not ' ' in kapsule_name
+        msg: >-
+          'kapsule_name' must be defined, non-empty and not contain whitespace
+
+    - name: Copy terraform sources
+      delegate_to: localhost
+      copy:
+        src: "{{ src_terraform_dir }}"
+        dest: "{{ workspace_terraform_dir }}"
+      when: tf_action == 'apply'
+
+    - name: Terraform DO
+      delegate_to: localhost
+      terraform:
+        project_path: "{{ terraform_dir }}"
+        state: "{{ (tf_action == 'destroy') | ternary('absent', 'present') }}"
+        force_init: true
+        workspace: "{{ workspace }}_{{ kapsule_name }}"
+        variables:
+          cluster_name: "{{ workspace }}-{{ kapsule_name }}"
+      register: tf_apply
+      environment:
+        RANCHER_URL: "{{ rancher_url }}"
+        RANCHER_TOKEN_KEY: "{{ rancher_token }}"

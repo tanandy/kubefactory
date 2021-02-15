@@ -24,7 +24,7 @@
         state: absent
       loop:
         - "{{ terraform_dir }}/.terraform"
-        - "{{ terraform_dir }}/.terraform.tfstate.d"
+        - "{{ terraform_dir }}/terraform.tfstate.d"
         - "{{ terraform_dir }}/.terraform.lock.hcl"
 
     - name: Render terraform code - rancher bootstrap
@@ -33,6 +33,14 @@
         src: rancher_bootstrap.tf.j2
         dest: "{{ terraform_dir }}/main.tf"
       
+    - name: Wait for rancher to be available
+      delegate_to: localhost
+      uri:
+        url: "https://{{ rancher_public_domain }}/ping"
+        status_code: 200
+      retries: 30
+      delay: 10
+        
     - name: Apply terraform
       delegate_to: localhost
       terraform:
