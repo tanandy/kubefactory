@@ -69,4 +69,20 @@ bind_zone_domains:
       - name: mail
         ip: "{{ public_ipv4 }}"
         ipv6: "{{ public_ipv6 }}"
+
+postfix_smtpd_tls_cert_file: "{{ common_certificate_file }}"
+postfix_smtpd_tls_key_file: "{{ common_certificate_key_file }}"
+
+postfix_myhostname: "{{ system_base_domain }}"
+postfix_virtual_mailbox_domains:
+  - "{{ system_base_domain }}"
+
+postfix_virtual_aliases:
+  - alias: "root"
+    email: "hostmaster@{{ system_base_domain }}"
+
+postfix_virtual_mailboxes:
+  - email: "hostmaster@{{ system_base_domain }}"
+    recipient: "hostmaster@{{ system_base_domain }}/"
+    system_user: autobot
 {% endraw %}

@@ -1,0 +1,7 @@
+env:
+  ## REQUIRED: Set the secret secret token that the Kubernetes runner and its runners will use
+  ## to authenticate. This is commented out in order to leave you the ability to set the
+  ## key via a separately provisioned secret (see existingSecretName above).
+  ## Ref: https://kube-runner.docs.drone.io/installation/reference/drone-rpc-secret/
+  ##
+  DRONE_RPC_SECRET: 2a93979b72a9bd6756ed4626f7cb00e5
