@@ -8,6 +8,8 @@
     tf_action: apply
     src_terraform_dir: "{{ (playbook_dir + '/../') | realpath }}/terraform/kapsule"
     terraform_dir: "{{ workspace_terraform_dir }}/kapsule"
+    block_marker: >-
+      # {mark} -- {{ workspace }} -- {{ kapsule_name }}
 
   tasks:
     - import_tasks: "{{ playbook_dir }}/inc/_tf_sanity_checks.yml"
@@ -43,4 +45,28 @@
         dest: "{{ workspace_secrets_dir }}/{{ kapsule_name }}.kubeconfig.yml"
         content: |-
           {{ tf_apply.outputs.kubeconfig_file.value }}
+      when: tf_action == 'apply'
+
+    - name: Render kapsule info as ansible var file
+      delegate_to: localhost
+      lineinfile:
+        path: "{{ workspace_host_vars_dir }}/tf_kapsules.yml"
+        create: yes
+        insertbefore: BOF
+        line: "{{ item }}"
+      loop:
+        - "kapsules:"
+        - "---"
+      when: tf_action == 'apply'
+
+    - name: Render kapsule info as ansible var file
+      delegate_to: localhost
+      blockinfile:
+        dest: "{{ workspace_host_vars_dir }}/tf_kapsules.yml"
+        marker: "{{ block_marker }}"
+        insertafter: "kapsule:"
+        block: |
+          {{ '  ' + kapsule_name }}:
+              wildcard_dns: "{{ tf_apply.outputs.wildcard_dns.value }}"
+              apiserver_url: "{{ tf_apply.outputs.apiserver_url.value }}"
       when: tf_action == 'apply'

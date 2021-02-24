@@ -19,7 +19,5 @@ variable k8s_cluster_enable_dashboard {
 }
  
 variable k8s_cluster_ingress {
-  default = "nginx"
+  default = "traefik"
 }
- 
- 
